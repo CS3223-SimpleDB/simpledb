@@ -61,6 +61,17 @@ public class Lexer {
       return tok.ttype == StreamTokenizer.TT_WORD && tok.sval.equals(w);
    }
    
+   public String matchIndexType() {
+      if (tok.ttype==StreamTokenizer.TT_WORD) {
+         if (tok.sval.equals("hash")) {
+            return "hash";
+         } else if (tok.sval.equals("btree")) {
+            return "btree";
+         }
+      }
+      return "invalid";
+   }
+   
    /**
     * Returns true if the current token is a legal identifier.
     * @return true if the current token is an identifier
@@ -78,54 +89,9 @@ public class Lexer {
     * @param d a character denoting the delimiter
     */
    public void eatDelim(char d) {
-      if (!matchDelim(d)) {
+      if (!matchDelim(d))
          throw new BadSyntaxException();
-      }
       nextToken();
-   }
-   
-   public String eatOpr() {
-  	 char currentToken = (char) tok.ttype;
-  	 String currentTokenInString = Character.toString(currentToken);
-  	 switch (currentTokenInString) {
-  	 	case "=":
-  	 		nextToken();
-  	 		return "=";
-  	 	case "<":
-  	 		nextToken();
-	  	   	char nextTokenLess = (char) tok.ttype;
-	  	  	String nextTokenLessInString = Character.toString(nextTokenLess);
-	  	  	if (nextTokenLessInString.equals("=")) {
-	  	  		nextToken();
-	  	  		return "<=";
-	  	  	}
-	  	  	if (nextTokenLessInString.equals(">")) {
-	  	  		nextToken();
-	  	  		return "<>";
-	  	  	}
-  	 		return "<";
-  	 	case ">":
-  	 		nextToken();
-	  	   	char nextTokenMore = (char) tok.ttype;
-	  	  	String nextTokenMoreInString = Character.toString(nextTokenMore);
-	  	  	if (nextTokenMoreInString.equals("=")) {
-	  	  		nextToken();
-	  	  		return ">=";
-	  	  	}
-  	 		return ">";
-  	 	case "!":
-  	 		nextToken();
-	  	   	char nextTokenNot = (char) tok.ttype;
-	  	  	String nextTokenNotInString = Character.toString(nextTokenNot);
-	  	  	if (nextTokenNotInString.equals("=")) {
-	  	  		nextToken();
-	  	  		return "!=";
-	  	  	}
-  	 		throw new BadSyntaxException();
-  	 	default:
-  	 		throw new BadSyntaxException();
-  	 }
-  		 
    }
    
    /**
@@ -168,6 +134,15 @@ public class Lexer {
       nextToken();
    }
    
+   public String eatIndexType() {
+      String indexType = matchIndexType();
+      if (indexType.equals("invalid")) {
+         throw new BadSyntaxException();
+      }
+      nextToken();
+      return indexType;
+   }
+   
    /**
     * Throws an exception if the current token is not 
     * an identifier. 
@@ -180,7 +155,51 @@ public class Lexer {
          throw new BadSyntaxException();
       String s = tok.sval;
       nextToken();
-      return s;	
+      return s;
+   }
+   
+   /**
+    * Throws an exception if the current token is not
+    * an operator.
+    * Otherwise, returns the integer representing the
+    * corresponding operator.
+    * @return the integer representing the operator
+    */
+   public String eatOpr() {
+      if (matchDelim('=')) {
+         nextToken();
+         return "=";         
+      } else if (matchDelim('<')) {
+         nextToken();
+         if (matchDelim('=')) {
+            nextToken();
+            return "<=";
+         } else if (matchDelim('>')) {
+            nextToken();
+            return "<>";
+         } else {
+            return "<";
+         }
+      } else if (matchDelim('>')) {
+         nextToken();
+         if (matchDelim('=')) {
+            nextToken();
+            return ">=";
+         } else {
+            return ">";
+         }
+      } else if (matchDelim('!')) {
+         nextToken();
+         if (matchDelim('=')) {
+            nextToken();
+            return "!=";
+         } else {
+            tok.pushBack();
+            throw new BadSyntaxException();
+         }
+      } else {
+         throw new BadSyntaxException();
+      }
    }
    
    private void nextToken() {
@@ -195,6 +214,7 @@ public class Lexer {
    private void initKeywords() {
       keywords = Arrays.asList("select", "from", "where", "and",
                                "insert", "into", "values", "delete", "update", "set", 
-                               "create", "table", "int", "varchar", "view", "as", "index", "on");
+                               "create", "table", "int", "varchar", "view", "as", "index", "on",
+                               "using", "hash", "btree");
    }
 }
