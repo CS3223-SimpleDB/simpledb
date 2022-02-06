@@ -10,24 +10,36 @@ import simpledb.record.*;
  */
 public class Term {
    private Expression lhs, rhs;
-   private String opr;
+   private String oprType;
    
    /**
     * Create a new term that compares two expressions
-    * against the operator.
+    * for equality.
     * @param lhs  the LHS expression
     * @param rhs  the RHS expression
-    * @param opr the operator in expression
-    */
-   public Term(Expression lhs, Expression rhs, String opr) {
+    */   
+   public Term(Expression lhs, Expression rhs) {
       this.lhs = lhs;
       this.rhs = rhs;
-      this.opr = opr;
+      this.oprType = "=";
+   }
+   
+   /**
+    * Create a new term that compares two expressions
+    * for equality.
+    * @param lhs  the LHS expression
+    * @param rhs  the RHS expression
+    * @param oprType the operator in the expression
+    */   
+   public Term(Expression lhs, Expression rhs, String oprType) {
+      this.lhs = lhs;
+      this.rhs = rhs;
+      this.oprType = oprType;
    }
    
    /**
     * Return true if both of the term's expressions
-    * satisfies the operator chosen,
+    * evaluate to the same constant,
     * with respect to the specified scan.
     * @param s the scan
     * @return true if both expressions have the same value in the scan
@@ -35,20 +47,19 @@ public class Term {
    public boolean isSatisfied(Scan s) {
       Constant lhsval = lhs.evaluate(s);
       Constant rhsval = rhs.evaluate(s);
-      if (opr == "=") {
-      	  return rhsval.equals(lhsval);
-      } else if (opr == "<") {
-    	  return ((lhsval.compareTo(rhsval) < 0));
-      } else if (opr == ">") {
-    	  return (lhsval.compareTo(rhsval) > 0);
-      } else if (opr == "<=") {
-    	  return ((lhsval.compareTo(rhsval) < 0) || (lhsval.equals(rhsval)));
-      } else if (opr == ">=") {
-    	  return ((lhsval.compareTo(rhsval) > 0) || (lhsval.equals(rhsval)));
+      if (oprType.equals("<")) {
+         return lhsval.compareTo(rhsval) < 0;
+      } else if (oprType.equals("<=")) {
+         return lhsval.compareTo(rhsval) <= 0; 
+      } else if (oprType.equals(">")) {
+         return lhsval.compareTo(rhsval) > 0;
+      } else if (oprType.equals(">=")) {
+         return lhsval.compareTo(rhsval) >= 0;
+      } else if (oprType.equals("!=") || oprType.equals("<>")) {
+         return !(lhsval.equals(rhsval));
       } else {
-    	  // opr is !=, guaranteed to be valid operator since error would be thrown in Parser
-    	  return !rhsval.equals(lhsval);
-      } 
+         return lhsval.equals(rhsval);
+      }
    }
    
    /**
@@ -135,6 +146,6 @@ public class Term {
    }
    
    public String toString() {
-      return lhs.toString() + opr + rhs.toString();
+      return lhs.toString() + "=" + rhs.toString();
    }
 }
