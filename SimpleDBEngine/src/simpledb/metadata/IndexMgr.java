@@ -4,6 +4,7 @@ import java.util.*;
 import static simpledb.metadata.TableMgr.MAX_NAME;
 import simpledb.tx.Transaction;
 import simpledb.record.TableScan;
+import simpledb.query.Constant;
 import simpledb.record.*;
 
 /**
@@ -29,6 +30,7 @@ class IndexMgr {
          sch.addStringField("indexname", MAX_NAME);
          sch.addStringField("tablename", MAX_NAME);
          sch.addStringField("fieldname", MAX_NAME);
+         sch.addIntField("indexstructure");
          tblmgr.createTable("idxcat", sch, tx);
       }
       this.tblmgr = tblmgr;
@@ -45,12 +47,14 @@ class IndexMgr {
     * @param fldname the name of the indexed field
     * @param tx the calling transaction
     */
-   public void createIndex(String idxname, String tblname, String fldname, Transaction tx) {
+   public void createIndex(String idxname, String tblname, String fldname, int indexType, Transaction tx) {
       TableScan ts = new TableScan(tx, "idxcat", layout);
       ts.insert();
       ts.setString("indexname", idxname);
       ts.setString("tablename", tblname);
       ts.setString("fieldname", fldname);
+      Constant indexTypeConstant = new Constant((Integer) indexType);
+      ts.setVal("indexstructure", indexTypeConstant);
       ts.close();
    }
    
@@ -68,9 +72,10 @@ class IndexMgr {
          if (ts.getString("tablename").equals(tblname)) {
          String idxname = ts.getString("indexname");
          String fldname = ts.getString("fieldname");
+         int indexStructure = ts.getInt("indexstructure");
          Layout tblLayout = tblmgr.getLayout(tblname, tx);
          StatInfo tblsi = statmgr.getStatInfo(tblname, tblLayout, tx);
-         IndexInfo ii = new IndexInfo(idxname, fldname, tblLayout.schema(), tx, tblsi);
+         IndexInfo ii = new IndexInfo(idxname, fldname, indexStructure, tblLayout.schema(), tx, tblsi);
          result.put(fldname, ii);
       }
       ts.close();
