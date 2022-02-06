@@ -18,7 +18,7 @@ public class CreateStudentDB {
          stmt.executeUpdate(s);
          System.out.println("Added studentid index");
          
-         s = "create index test on STUDENT(majorid) using btree";
+         s = "create index studentmajor on STUDENT(majorid) using btree";
          stmt.executeUpdate(s);
          System.out.println("Added majorid index");
 
