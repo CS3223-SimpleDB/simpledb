@@ -14,11 +14,11 @@ public class CreateStudentDB {
          stmt.executeUpdate(s);
          System.out.println("Table STUDENT created.");
          
-         s = "create index studentid on STUDENT(sid)";
+         s = "create index studentid on STUDENT(sid) using hash";
          stmt.executeUpdate(s);
          System.out.println("Added studentid index");
          
-         s = "create index test on STUDENT(majorid)";
+         s = "create index test on STUDENT(majorid) using btree";
          stmt.executeUpdate(s);
          System.out.println("Added majorid index");
 
@@ -81,7 +81,7 @@ public class CreateStudentDB {
          stmt.executeUpdate(s);
          System.out.println("Table ENROLL created.");
          
-         s = "create index enrollstudent on ENROLL(StudentId)";
+         s = "create index enrollstudent on ENROLL(StudentId) using hash";
          stmt.executeUpdate(s);
          System.out.println("Added studentid index");
 
