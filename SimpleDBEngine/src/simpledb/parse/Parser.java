@@ -1,7 +1,6 @@
 package simpledb.parse;
 
 import java.util.*;
-
 import simpledb.query.*;
 import simpledb.record.*;
 
@@ -38,9 +37,9 @@ public class Parser {
    
    public Term term() {
       Expression lhs = expression();
-      String val = lex.eatOpr();
+      String oprType = lex.eatOpr();
       Expression rhs = expression();
-      return new Term(lhs, rhs, val);
+      return new Term(lhs, rhs, oprType);
    }
    
    public Predicate predicate() {
@@ -233,6 +232,7 @@ public class Parser {
 //  Method for parsing create index commands
    
    public CreateIndexData createIndex() {
+      CreateIndexData index;
       lex.eatKeyword("index");
       String idxname = lex.eatId();
       lex.eatKeyword("on");
@@ -240,8 +240,13 @@ public class Parser {
       lex.eatDelim('(');
       String fldname = field();
       lex.eatDelim(')');
-      // add in a dummy number for now
-      return new CreateIndexData(idxname, tblname, fldname, 1);
+      String indexType = "none";
+      try {
+         lex.eatKeyword("using");
+         indexType = lex.eatIndexType();
+      } finally {
+         index = new CreateIndexData(idxname, tblname, fldname, indexType);
+      }
+      return index;
    }
 }
-
