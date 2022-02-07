@@ -148,4 +148,8 @@ public class Term {
    public String toString() {
       return lhs.toString() + "=" + rhs.toString();
    }
+   
+   public boolean isInequality() {
+	   return !oprType.equals("=");
+   }
 }

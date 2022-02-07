@@ -45,6 +45,7 @@ class RemoteConnectionImpl extends UnicastRemoteObject implements RemoteConnecti
       currentTx.commit();
    }
    
+   
 // The following methods are used by the server-side classes.
    
    /**

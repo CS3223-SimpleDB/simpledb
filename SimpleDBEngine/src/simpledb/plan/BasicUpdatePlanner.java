@@ -67,7 +67,8 @@ public class BasicUpdatePlanner implements UpdatePlanner {
       return 0;
    }
    public int executeCreateIndex(CreateIndexData data, Transaction tx) {
-      mdm.createIndex(data.indexName(), data.tableName(), data.fieldName(), data.indexType(), tx);
+      mdm.createIndex(data.indexName(), data.tableName(),
+    		  data.fieldName(), data.indexType(), tx);
       return 0;  
    }
 }

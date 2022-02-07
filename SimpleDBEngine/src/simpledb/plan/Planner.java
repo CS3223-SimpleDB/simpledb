@@ -1,6 +1,7 @@
 package simpledb.plan;
 
 import simpledb.tx.Transaction;
+
 import simpledb.parse.*;
 
 /**
