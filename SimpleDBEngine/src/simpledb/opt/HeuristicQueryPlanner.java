@@ -23,6 +23,8 @@ public class HeuristicQueryPlanner implements QueryPlanner {
    /**
     * Creates an optimized left-deep query plan using the following
     * heuristics.
+    * If a non-equality operator is present, search without using index
+    * by creating a BasicQueryPlanenr object.
     * H1. Choose the smallest table (considering selection predicates)
     * to be first in the join order.
     * H2. Add the table to the join order which

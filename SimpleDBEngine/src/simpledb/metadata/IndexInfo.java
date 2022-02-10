@@ -27,6 +27,7 @@ public class IndexInfo {
     * Create an IndexInfo object for the specified index.
     * @param idxname the name of the index
     * @param fldname the name of the indexed field
+    * @param indexStructure the name of the index structure chosen
     * @param tx the calling transaction
     * @param tblSchema the schema of the table
     * @param si the statistics for the table
