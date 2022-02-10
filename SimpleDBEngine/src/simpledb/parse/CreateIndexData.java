@@ -41,6 +41,10 @@ public class CreateIndexData {
       return fldname;
    }
    
+   /**
+    * Returns the type of the index.
+    * @return the type of the index
+    */
    public String indexType() {
       return indexType;
    }

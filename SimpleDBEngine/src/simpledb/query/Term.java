@@ -26,7 +26,7 @@ public class Term {
    
    /**
     * Create a new term that compares two expressions
-    * for equality.
+    * based on the type of operator.
     * @param lhs  the LHS expression
     * @param rhs  the RHS expression
     * @param oprType the operator in the expression
@@ -40,7 +40,8 @@ public class Term {
    /**
     * Return true if both of the term's expressions
     * evaluate to the same constant,
-    * with respect to the specified scan.
+    * with respect to the specified scan
+    * and respective operation.
     * @param s the scan
     * @return true if both expressions have the same value in the scan
     */
