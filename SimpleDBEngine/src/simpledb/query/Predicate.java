@@ -146,4 +146,12 @@ public class Predicate {
          result += " and " + iter.next().toString();
       return result;
    }
+   
+   /**
+    * Retrieves all the terms in a predicate.
+    * @return list of terms contained in a predicate
+    */
+   public List<Term> getTerms() {
+	   return terms;
+   }
 }

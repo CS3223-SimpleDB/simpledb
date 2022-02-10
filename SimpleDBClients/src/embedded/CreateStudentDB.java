@@ -31,6 +31,14 @@ public class CreateStudentDB {
          s = "create table DEPT(DId int, DName varchar(8))";
          stmt.executeUpdate(s);
          System.out.println("Table DEPT created.");
+         
+         s = "create index studentid on student(sid)";
+         stmt.executeUpdate(s);
+         System.out.println("Added studentid index");
+         
+         s = "create index mid on student(majorid)";
+         stmt.executeUpdate(s);
+         System.out.println("Added majorid index");
 
          s = "insert into DEPT(DId, DName) values ";
          String[] deptvals = {"(10, 'compsci')",

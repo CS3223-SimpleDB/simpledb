@@ -16,7 +16,7 @@ public class FindMajors {
       String url = "jdbc:simpledb://localhost";
       String qry = "select sname, gradyear "
             + "from student, dept "
-            + "where did = majorid "
+            + "where sid < 5 "
             + "and dname = '" + major + "'";
  
       Driver d = new NetworkDriver();

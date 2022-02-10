@@ -35,6 +35,7 @@ public class IndexUpdateTest {
       //    Then insert a record into each of the indexes.
       RID datarid = studentscan.getRid();
       for (String fldname : indexes.keySet()) {
+    	 System.out.println(fldname);
          Constant dataval = studentscan.getVal(fldname);
          Index idx = indexes.get(fldname);
          idx.insert(dataval, datarid);

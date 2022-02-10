@@ -61,6 +61,10 @@ public class Lexer {
       return tok.ttype == StreamTokenizer.TT_WORD && tok.sval.equals(w);
    }
    
+   /**
+    * Returns the string representing the index type of the current token.
+    * @return the string representing the index type of the current token
+    */
    public String matchIndexType() {
       if (tok.ttype==StreamTokenizer.TT_WORD) {
          if (tok.sval.equals("hash")) {
@@ -134,6 +138,12 @@ public class Lexer {
       nextToken();
    }
    
+   /**
+    * Throws an exception if the current token is an invalid operator. 
+    * Otherwise, returns the string representing the operator
+    * and moves to the next token.
+    * @return the string representing the operator
+    */
    public String eatIndexType() {
       String indexType = matchIndexType();
       if (indexType.equals("invalid")) {
@@ -160,10 +170,11 @@ public class Lexer {
    
    /**
     * Throws an exception if the current token is not
-    * an operator.
-    * Otherwise, returns the integer representing the
-    * corresponding operator.
-    * @return the integer representing the operator
+    * a valid operator.
+    * Otherwise, returns the string representing the
+    * corresponding operator
+    * and moves to the next token.
+    * @return the string representing the operator
     */
    public String eatOpr() {
       if (matchDelim('=')) {
