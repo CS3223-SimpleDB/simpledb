@@ -32,6 +32,14 @@ public class CreateStudentDB {
          String createDeptTable = "create table DEPT(DId int, DName varchar(8))";
          planner.executeUpdate(createDeptTable, tx);
          System.out.println("Table DEPT created.");
+         
+         String createIndexStudentid = "create index studentid on student(sid)";
+         planner.executeUpdate(createIndexStudentid, tx);
+         System.out.println("Added studentid index");
+         
+         String createIndexMajorid = "create index mid on student(majorid)";
+         planner.executeUpdate(createIndexMajorid, tx);
+         System.out.println("Added majorid index");
 
          String insertDeptRecords = "insert into DEPT(DId, DName) values ";
          String[] deptvals = {"(10, 'compsci')",
