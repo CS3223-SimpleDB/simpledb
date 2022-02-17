@@ -12,14 +12,18 @@ public class QueryData {
    private List<String> fields;
    private Collection<String> tables;
    private Predicate pred;
+   private List<String> orderByAttributes;
+   private List<String> orderByDirection;
    
    /**
-    * Saves the field and table list and predicate.
+    * Saves the field, table list, predicate, order by attributes, and order by direction for each order by attribute.
     */
-   public QueryData(List<String> fields, Collection<String> tables, Predicate pred) {
+   public QueryData(List<String> fields, Collection<String> tables, Predicate pred, List<String> orderByAttributes, List<String> orderByDirection) {
       this.fields = fields;
       this.tables = tables;
       this.pred = pred;
+      this.orderByAttributes = orderByAttributes;
+      this.orderByDirection = orderByDirection;
    }
    
    /**
@@ -45,6 +49,23 @@ public class QueryData {
     */
    public Predicate pred() {
       return pred;
+   }
+   
+   /**
+    * Returns the attributes mentioned in the order by clause.
+    * @return a list of order by attributes
+    */
+   public List<String> orderByAttributes() {
+      return orderByAttributes;
+   }
+   
+   /**
+    * Returns the direction for each attribute mentioned
+    * in the order by clause.
+    * @return a list of order by direction for each order by attribute
+    */
+   public List<String> orderByDirection() {
+      return orderByDirection;
    }
    
    public String toString() {

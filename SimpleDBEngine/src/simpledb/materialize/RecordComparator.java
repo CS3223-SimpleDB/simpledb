@@ -10,6 +10,7 @@ import simpledb.query.*;
  */
 public class RecordComparator implements Comparator<Scan> {
    private List<String> fields;
+   private List<String> directions;
    
    /**
     * Create a comparator using the specified fields,
@@ -17,7 +18,12 @@ public class RecordComparator implements Comparator<Scan> {
     * @param fields a list of field names
     */
    public RecordComparator(List<String> fields) {
-      this.fields = fields;
+       this.fields = fields;
+   }
+   
+   public RecordComparator(List<String> fields, List<String> directions) {
+       this.fields = fields;
+       this.directions = directions;
    }
    
    /**
@@ -41,5 +47,22 @@ public class RecordComparator implements Comparator<Scan> {
             return result;
       }
       return 0;
+   }
+   
+   public List<String> compareSort(Scan s1, Scan s2) {
+	  List<String> resultList = new LinkedList<String>();
+      for (String fldname : fields) {
+         Constant val1 = s1.getVal(fldname);
+         Constant val2 = s2.getVal(fldname);
+         int result = val1.compareTo(val2);
+         if (result != 0) {
+        	 int fldnameIndex = fields.indexOf(fldname);
+        	 String direction = directions.get(fldnameIndex);
+        	 resultList.add(direction);
+        	 resultList.add(String.valueOf(result));
+        	 return resultList;
+         }
+      }
+      return resultList;
    }
 }

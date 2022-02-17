@@ -63,7 +63,14 @@ public class Parser {
          lex.eatKeyword("where");
          pred = predicate();
       }
-      return new QueryData(fields, tables, pred);
+      List<String> orderByAttributes = new ArrayList<String>();
+      List<String> orderByDirection = new ArrayList<String>();
+      if (lex.matchKeyword("order")) {
+         lex.eatKeyword("order");
+         lex.eatKeyword("by");
+         orderByList(orderByAttributes, orderByDirection);
+      }
+      return new QueryData(fields, tables, pred, orderByAttributes, orderByDirection);
    }
    
    private List<String> selectList() {
@@ -84,6 +91,23 @@ public class Parser {
          L.addAll(tableList());
       }
       return L;
+   }
+   
+   private void orderByList(List<String> orderByAttributes, List<String> orderByDirection) {
+      orderByAttributes.add(field());
+      if (lex.matchKeyword("desc")) {
+         lex.eatKeyword("desc");
+         orderByDirection.add("desc");
+      } else if (lex.matchKeyword("asc")) {
+         lex.eatKeyword("asc");
+         orderByDirection.add("asc");
+      } else {
+         orderByDirection.add("asc");
+      }
+      if (lex.matchDelim(',')) {
+         lex.eatDelim(',');
+         orderByList(orderByAttributes, orderByDirection);
+      }
    }
    
 // Methods for parsing the various update commands
@@ -232,7 +256,6 @@ public class Parser {
 //  Method for parsing create index commands
    
    public CreateIndexData createIndex() {
-      CreateIndexData index;
       lex.eatKeyword("index");
       String idxname = lex.eatId();
       lex.eatKeyword("on");
@@ -241,12 +264,10 @@ public class Parser {
       String fldname = field();
       lex.eatDelim(')');
       String indexType = "none";
-      try {
+      if (lex.matchKeyword("using")) {
          lex.eatKeyword("using");
          indexType = lex.eatIndexType();
-      } finally {
-         index = new CreateIndexData(idxname, tblname, fldname, indexType);
       }
-      return index;
+      return new CreateIndexData(idxname, tblname, fldname, indexType);
    }
 }

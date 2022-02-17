@@ -7,6 +7,7 @@ import simpledb.parse.QueryData;
 import simpledb.plan.*;
 import simpledb.query.Predicate;
 import simpledb.query.Term;
+import simpledb.materialize.*;
 
 /**
  * A query planner that optimizes using a heuristic-based algorithm.
@@ -67,7 +68,14 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       }
       
       // Step 4.  Project on the field names and return
-      return new ProjectPlan(currentplan, data.fields());
+      Plan p = new ProjectPlan(currentplan, data.fields());
+      
+      if (data.orderByAttributes().isEmpty()) {
+          return p;
+      }
+      
+      p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      return p;
    }
    
    private Plan getLowestSelectPlan() {

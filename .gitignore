@@ -1,3 +1,5 @@
 **/.metadata
 **.class
 *.tbl
+SimpleDBEngine/studentdb/*
+SimpleDBClients/studentdb/*
