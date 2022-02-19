@@ -114,8 +114,10 @@ public class Predicate {
    public Constant equatesWithConstant(String fldname) {
       for (Term t : terms) {
          Constant c = t.equatesWithConstant(fldname);
-         if (c != null)
-            return c;
+         if ((c != null) && !t.isInequality()) {
+        	 return c;
+        	 
+         }
       }
       return null;
    }
@@ -131,8 +133,15 @@ public class Predicate {
    public String equatesWithField(String fldname) {
       for (Term t : terms) {
          String s = t.equatesWithField(fldname);
-         if (s != null)
-            return s;
+         System.out.println("check field"); 
+         System.out.println(fldname);
+         System.out.println("which term?"); 
+         System.out.println(t);
+         if ((s != null) && !t.isInequality()) {
+        	 System.out.println("which field?");
+        	 System.out.println(fldname);
+        	 return s;
+         }
       }
       return null;
    }

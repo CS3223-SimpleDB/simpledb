@@ -56,6 +56,7 @@ public class IndexJoinScan implements Scan {
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
+	  System.out.println("in indexjoinscan next");
       while (true) {
          if (idx.next()) {
             rhs.moveToRid(idx.getDataRid());
