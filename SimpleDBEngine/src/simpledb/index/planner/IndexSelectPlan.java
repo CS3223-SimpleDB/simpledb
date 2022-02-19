@@ -36,8 +36,11 @@ public class IndexSelectPlan implements Plan {
     */
    public Scan open() {
       // throws an exception if p is not a tableplan.
+	   System.out.println("is it select plan?");
       TableScan ts = (TableScan) p.open();
+      System.out.println("not select plan table scan");
       Index idx = ii.open();
+      System.out.println("not select plan open index");
       return new IndexSelectScan(ts, idx, val);
    }
    

@@ -114,12 +114,22 @@ public class Predicate {
    public Constant equatesWithConstant(String fldname) {
       for (Term t : terms) {
          Constant c = t.equatesWithConstant(fldname);
-         if ((c != null) && !t.isInequality()) {
+         if ((c != null)) {
         	 return c;
         	 
          }
       }
       return null;
+   }
+   
+   public Constant equatesWithConstantPlannerChecks(String fldname) {
+	   for (Term t : terms) {
+	       Constant c = t.equatesWithConstant(fldname);
+	       if ((c != null) && !t.isInequality()) {
+	           return c;
+	       }
+	   }
+       return null;
    }
 
    /**
@@ -133,17 +143,25 @@ public class Predicate {
    public String equatesWithField(String fldname) {
       for (Term t : terms) {
          String s = t.equatesWithField(fldname);
-         System.out.println("check field"); 
-         System.out.println(fldname);
-         System.out.println("which term?"); 
-         System.out.println(t);
-         if ((s != null) && !t.isInequality()) {
+         if ((s != null)) {
         	 System.out.println("which field?");
         	 System.out.println(fldname);
         	 return s;
          }
       }
       return null;
+   }
+   
+   public String equatesWithFieldPlannerChecks(String fldname) {
+	   for (Term t : terms) {
+	       String s = t.equatesWithField(fldname);
+	       if ((s != null) && !t.isInequality()) {
+	           System.out.println("which field?");
+	           System.out.println(fldname);
+	           return s;
+	       }
+	   }
+       return null;
    }
 
    public String toString() {

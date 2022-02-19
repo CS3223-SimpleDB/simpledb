@@ -120,7 +120,6 @@ class TablePlanner {
    private Plan addSelectPred(Plan p) {
       Predicate selectpred = mypred.selectSubPred(myschema);
       if (selectpred != null) {
-    	  System.out.println("why is this select pred here");
           return new SelectPlan(p, selectpred);
       } else {
     	  return p;

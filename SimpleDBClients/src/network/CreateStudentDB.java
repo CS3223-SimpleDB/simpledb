@@ -40,9 +40,9 @@ public class CreateStudentDB {
          stmt.executeUpdate(s);
          System.out.println("Table DEPT created.");
          
-         //s = "create index did on DEPT(did) using hash";
-         //stmt.executeUpdate(s);
-         //System.out.println("Added did index");
+         s = "create index depttableid on DEPT(did) using hash";
+         stmt.executeUpdate(s);
+         System.out.println("Added did index");
 
          s = "insert into DEPT(DId, DName) values ";
          String[] deptvals = {"(10, 'compsci')",
