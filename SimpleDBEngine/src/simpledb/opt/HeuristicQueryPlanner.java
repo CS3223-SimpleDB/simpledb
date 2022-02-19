@@ -71,10 +71,12 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       Plan p = new ProjectPlan(currentplan, data.fields());
       
       if (data.orderByAttributes().isEmpty()) {
+    	  System.out.println("returning alrdy");
           return p;
       }
       
       p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      
       return p;
    }
    

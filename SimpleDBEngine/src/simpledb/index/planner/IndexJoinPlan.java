@@ -41,7 +41,9 @@ public class IndexJoinPlan implements Plan {
    public Scan open() {
       Scan s = p1.open();
       // throws an exception if p2 is not a tableplan
+      System.out.println("suspected");
       TableScan ts = (TableScan) p2.open();
+      System.out.println("survived");
       Index idx = ii.open();
       return new IndexJoinScan(s, idx, joinfield, ts);
    }
