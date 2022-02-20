@@ -45,6 +45,9 @@ public class TableScan implements UpdateScan {
    }
 
    public int getInt(String fldname) {
+	  if(currentslot <0) {
+	      return currentslot;   
+	  }
       return rp.getInt(currentslot, fldname);
    }
 

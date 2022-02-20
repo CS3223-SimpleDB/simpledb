@@ -144,8 +144,6 @@ public class Predicate {
       for (Term t : terms) {
          String s = t.equatesWithField(fldname);
          if ((s != null)) {
-        	 System.out.println("which field?");
-        	 System.out.println(fldname);
         	 return s;
          }
       }
@@ -156,8 +154,6 @@ public class Predicate {
 	   for (Term t : terms) {
 	       String s = t.equatesWithField(fldname);
 	       if ((s != null) && !t.isInequality()) {
-	           System.out.println("which field?");
-	           System.out.println(fldname);
 	           return s;
 	       }
 	   }

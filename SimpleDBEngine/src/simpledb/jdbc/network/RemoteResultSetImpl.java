@@ -25,9 +25,7 @@ class RemoteResultSetImpl extends UnicastRemoteObject implements RemoteResultSet
     * @throws RemoteException
     */
    public RemoteResultSetImpl(Plan plan, RemoteConnectionImpl rconn) throws RemoteException {
-	  System.out.println("can open plan?");
       s = plan.open();
-      System.out.println("can open schema?");
       sch = plan.schema();
       this.rconn = rconn;
    }

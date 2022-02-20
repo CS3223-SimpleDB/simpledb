@@ -52,18 +52,26 @@ public class SimpleIJ {
 
          // print records
          while(rs.next()) {
+        	boolean isNegativeValue = false;
             for (int i=1; i<=numcols; i++) {
                String fldname = md.getColumnName(i);
                int fldtype = md.getColumnType(i);
                String fmt = "%" + md.getColumnDisplaySize(i);
                if (fldtype == Types.INTEGER) {
                   int ival = rs.getInt(fldname);
+                  if (ival < 0) {
+                	  isNegativeValue = true;
+                	  break;
+                  }
                   System.out.format(fmt + "d", ival);
                }
                else {
                   String sval = rs.getString(fldname);
                   System.out.format(fmt + "s", sval);
                }
+            }
+            if (isNegativeValue) {
+            	break;
             }
             System.out.println();
          }

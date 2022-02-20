@@ -32,22 +32,6 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
-	  Predicate pred = data.pred();
-	  List<Term> terms = pred.getTerms();
-	  boolean checkInequalityTerms = false;
-	  for (Term t : terms) {
-	      if (t.isInequality()) {
-	          checkInequalityTerms = true;
-	    	  break;
-	      }
-	  }
-	  /*
-	  if (checkInequalityTerms) {
-		  // use basic planner
-		  QueryPlanner basicQueryPlanner = new BasicQueryPlanner(mdm);
-		  Plan basicPlan = basicQueryPlanner.createPlan(data, tx);
-		  return basicPlan;
-	  }*/
       
       // Step 1:  Create a TablePlanner object for each mentioned table
       for (String tblname : data.tables()) {
@@ -71,12 +55,10 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       Plan p = new ProjectPlan(currentplan, data.fields());
       
       if (data.orderByAttributes().isEmpty()) {
-    	  System.out.println("returning alrdy");
           return p;
       }
       
       p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
-      
       return p;
    }
    
@@ -86,14 +68,11 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       for (TablePlanner tp : tableplanners) {
          Plan plan = tp.makeSelectPlan();
          if (bestplan == null || plan.recordsOutput() < bestplan.recordsOutput()) {
-        	System.out.println("have bestplan");
             besttp = tp;
             bestplan = plan;
          }
       }
       tableplanners.remove(besttp);
-      System.out.println("check size");
-      System.out.println(tableplanners.size());
 
       return bestplan;
    }
@@ -101,9 +80,7 @@ public class HeuristicQueryPlanner implements QueryPlanner {
    private Plan getLowestJoinPlan(Plan current) {
       TablePlanner besttp = null;
       Plan bestplan = null;
-      System.out.println("getting lowest join");
       for (TablePlanner tp : tableplanners) {
-    	 System.out.println("getting lowest join in for loop");
          Plan plan = tp.makeJoinPlan(current);
          if (plan != null && (bestplan == null || plan.recordsOutput() < bestplan.recordsOutput())) {
             besttp = tp;

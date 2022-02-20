@@ -61,10 +61,8 @@ class TablePlanner {
     */
    public Plan makeJoinPlan(Plan current) {
       Schema currsch = current.schema();
-      System.out.println("makejoinplan!");
       Predicate joinpred = mypred.joinSubPred(myschema, currsch);
       if (joinpred == null) {
-    	  System.out.println("subpred is null");
     	  return null;
       }
       Plan p = makeIndexJoin(current, currsch);
@@ -86,10 +84,9 @@ class TablePlanner {
    
    private Plan makeIndexSelect() {
       for (String fldname : indexes.keySet()) {
-         Constant val = mypred.equatesWithConstant(fldname);
+         Constant val = mypred.equatesWithConstantPlannerChecks(fldname);
          if (val != null) {
             IndexInfo ii = indexes.get(fldname);
-            System.out.println("index select!");
             return new IndexSelectPlan(myplan, ii, val);
          }
       }
@@ -97,12 +94,9 @@ class TablePlanner {
    }
    
    private Plan makeIndexJoin(Plan current, Schema currsch) {
-	  System.out.println("before for loop");
       for (String fldname : indexes.keySet()) {
-    	 System.out.println("in for loop");
-         String outerfield = mypred.equatesWithField(fldname);
+         String outerfield = mypred.equatesWithFieldPlannerChecks(fldname);
          if (outerfield != null && currsch.hasField(outerfield)) {
-        	System.out.println("index join!"); 
             IndexInfo ii = indexes.get(fldname);
             Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
             p = addSelectPred(p);
@@ -119,11 +113,10 @@ class TablePlanner {
    
    private Plan addSelectPred(Plan p) {
       Predicate selectpred = mypred.selectSubPred(myschema);
-      if (selectpred != null) {
-          return new SelectPlan(p, selectpred);
-      } else {
-    	  return p;
-      }
+      if (selectpred != null)
+         return new SelectPlan(p, selectpred);
+      else
+         return p;
    }
    
    private Plan addJoinPred(Plan p, Schema currsch) {
