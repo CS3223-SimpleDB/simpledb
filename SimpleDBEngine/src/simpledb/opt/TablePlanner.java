@@ -8,6 +8,7 @@ import simpledb.metadata.*;
 import simpledb.index.planner.*;
 import simpledb.materialize.MergeJoinPlan;
 import simpledb.multibuffer.MultibufferProductPlan;
+import simpledb.multibuffer.BlockJoinPlan;
 import simpledb.plan.*;
 
 /**
@@ -67,52 +68,47 @@ class TablePlanner {
     	  return null;
       }
       Plan p = makeIndexJoin(current, currsch);
-      
-      // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
-      Plan sortPlan = makeSortJoin(current, currsch);
-	  int sortMergeIo = sortPlan.blocksAccessed();
-	  Plan nestedPlan = makeProductJoin(current, currsch);
-	  int nestedLoopIo = nestedPlan.blocksAccessed();
-	  
+      Plan sortMergePlan = makeSortJoin(current, currsch);
+      Plan nestedLoopsPlan = makeNestedLoopJoin(current, currsch);
       if (p == null) {
-    	  // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
-    	  if (sortMergeIo < nestedLoopIo) {
-    		  p = sortPlan;
-    	  } else {
-    		  p = nestedPlan;
-    	  }
-    	  p = makeProductJoin(current, currsch);
+         if (sortMergePlan == null) {
+            if (nestedLoopsPlan == null) {
+               p = makeProductJoin(current, currsch);
+            } else {
+               p = nestedLoopsPlan;
+            }
+         } else {
+            int sortMergeIo = sortMergePlan.blocksAccessed();
+            int nestedLoopsIo = nestedLoopsPlan.blocksAccessed();
+            if (sortMergeIo < nestedLoopsIo) {
+               p = sortMergePlan;
+            } else {
+               p = nestedLoopsPlan;
+            }
+         }
+         return p;
       } else {
-    	 // compare blocks accessed for all three plans
-    	 // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
-    	 int indexIo = p.blocksAccessed();
-    	 int lowestCost = getLowestIoCost(indexIo, sortMergeIo, nestedLoopIo);
-    	 if (lowestCost == indexIo) {
-    		 return p;
-    	 } else if (lowestCost == sortMergeIo) {
-    		 p = sortPlan;
-    	 } else {
-    		 p = nestedPlan;
-    	 }
-      }
-      return p;
+         return lowestCostPlan(p, sortMergePlan, nestedLoopsPlan);
+      }	
    }
    
-   private int getLowestIoCost(int indexIo, int sortMergeIo, int nestedLoopIo) {
- 	  if (indexIo < sortMergeIo) {
-		  if (indexIo < nestedLoopIo) {
-			  return indexIo;
-		  } else {
-			  return nestedLoopIo;
-		  }
-	  } else {
-		  // sortMergeIo < indexIo to reach else
-		  if (sortMergeIo < nestedLoopIo) {
-			  return sortMergeIo;
-		  } else {
-			  return nestedLoopIo;
-		  }
-	  }
+   private Plan lowestCostPlan(Plan p1, Plan p2, Plan p3) {
+      int p1Cost = p1.blocksAccessed();
+      int p2Cost = p2.blocksAccessed();
+      int p3Cost = p3.blocksAccessed();
+      if (p1Cost < p2Cost) {
+         if (p1Cost < p3Cost) {
+            return p1;
+         } else {
+            return p3;
+         }
+      } else {
+         if (p2Cost < p3Cost) {
+            return p2;
+         } else {
+            return p3;
+         }
+      }
    }
    
    /**
@@ -165,6 +161,18 @@ class TablePlanner {
 		   }
 	   }
 	   return null;
+   }
+   
+   private Plan makeNestedLoopJoin(Plan current, Schema currsch) {
+      for (String fldname : myschema.fields()) {
+         String commonfield = mypred.equatesWithField(fldname);
+         if (commonfield != null && currsch.hasField(commonfield)) {
+            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield);
+            p = addSelectPred(p);
+            return addJoinPred(p, currsch);
+         }
+      }
+      return null;
    }
    
    private Plan addSelectPred(Plan p) {
