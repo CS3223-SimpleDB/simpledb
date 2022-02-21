@@ -68,9 +68,9 @@ class TablePlanner {
       Plan p = makeIndexJoin(current, currsch);
       
       /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
-      sortPlan = makeSortJoin(current, currsch);
+      Plan sortPlan = makeSortJoin(current, currsch);
 	  int sortMergeIo = sortPlan.blocksAccessed();
-	  nestedPlan = makeProductJoin(current, currsch);
+	  Plan nestedPlan = makeProductJoin(current, currsch);
 	  int nestedLoopIo = nestedPlan.blocksAccessed();
 	  */
       if (p == null) {
@@ -86,9 +86,9 @@ class TablePlanner {
     	 /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
     	 int indexIo = p.blocksAccessed();
     	 int lowestCost = getLowestIoCost(indexIo, sortMergeIo, nestedLoopIo);
-    	 if (lowestCost.equals(indexIo)) {
+    	 if (lowestCost == indexIo) {
     		 return p;
-    	 } else if (lowestCost.equals(sortMergeIo)) {
+    	 } else if (lowestCost == sortMergeIo) {
     		 p = sortPlan;
     	 } else {
     		 p = nestedPlan;
@@ -152,6 +152,10 @@ class TablePlanner {
    private Plan makeProductJoin(Plan current, Schema currsch) {
       Plan p = makeProductPlan(current);
       return addJoinPred(p, currsch);
+   }
+   
+   private Plan makeSortJoin(Plan current, Schema currsch) {
+	   return current;
    }
    
    private Plan addSelectPred(Plan p) {

@@ -67,6 +67,10 @@ public class SimpleIJ {
                }
                else {
                   String sval = rs.getString(fldname);
+                  if (sval.length() == 0) {
+                	  isNegativeValue = true;
+                	  break;
+                  }
                   System.out.format(fmt + "s", sval);
                }
             }
