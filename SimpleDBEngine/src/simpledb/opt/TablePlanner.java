@@ -6,6 +6,7 @@ import simpledb.record.*;
 import simpledb.query.*;
 import simpledb.metadata.*;
 import simpledb.index.planner.*;
+import simpledb.materialize.MergeJoinPlan;
 import simpledb.multibuffer.MultibufferProductPlan;
 import simpledb.plan.*;
 
@@ -67,23 +68,23 @@ class TablePlanner {
       }
       Plan p = makeIndexJoin(current, currsch);
       
-      /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+      // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
       Plan sortPlan = makeSortJoin(current, currsch);
 	  int sortMergeIo = sortPlan.blocksAccessed();
 	  Plan nestedPlan = makeProductJoin(current, currsch);
 	  int nestedLoopIo = nestedPlan.blocksAccessed();
-	  */
+	  
       if (p == null) {
-    	  /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+    	  // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
     	  if (sortMergeIo < nestedLoopIo) {
     		  p = sortPlan;
     	  } else {
     		  p = nestedPlan;
-    	  }*/
+    	  }
     	  p = makeProductJoin(current, currsch);
       } else {
-    	  // compare blocks accessed for all three plans
-    	 /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+    	 // compare blocks accessed for all three plans
+    	 // TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
     	 int indexIo = p.blocksAccessed();
     	 int lowestCost = getLowestIoCost(indexIo, sortMergeIo, nestedLoopIo);
     	 if (lowestCost == indexIo) {
@@ -92,7 +93,7 @@ class TablePlanner {
     		 p = sortPlan;
     	 } else {
     		 p = nestedPlan;
-    	 }*/
+    	 }
       }
       return p;
    }
@@ -155,7 +156,15 @@ class TablePlanner {
    }
    
    private Plan makeSortJoin(Plan current, Schema currsch) {
-	   return current;
+	   for (String fldname : myschema.fields()) {
+		   String leftfield = mypred.equatesWithField(fldname);
+		   if (leftfield != null && currsch.hasField(leftfield)) {
+			   Plan p = new MergeJoinPlan(tx, current, myplan, leftfield, fldname);
+			   p = addSelectPred(p);
+			   return addJoinPred(p, currsch);
+		   }
+	   }
+	   return null;
    }
    
    private Plan addSelectPred(Plan p) {
