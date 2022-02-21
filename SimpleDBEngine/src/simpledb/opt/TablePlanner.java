@@ -66,9 +66,52 @@ class TablePlanner {
     	  return null;
       }
       Plan p = makeIndexJoin(current, currsch);
-      if (p == null)
-         p = makeProductJoin(current, currsch);
+      
+      /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+      sortPlan = makeSortJoin(current, currsch);
+	  int sortMergeIo = sortPlan.blocksAccessed();
+	  nestedPlan = makeProductJoin(current, currsch);
+	  int nestedLoopIo = nestedPlan.blocksAccessed();
+	  */
+      if (p == null) {
+    	  /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+    	  if (sortMergeIo < nestedLoopIo) {
+    		  p = sortPlan;
+    	  } else {
+    		  p = nestedPlan;
+    	  }*/
+    	  p = makeProductJoin(current, currsch);
+      } else {
+    	  // compare blocks accessed for all three plans
+    	 /* TO BE UNCOMMENTED AFTER SORTJOIN IS ADDED
+    	 int indexIo = p.blocksAccessed();
+    	 int lowestCost = getLowestIoCost(indexIo, sortMergeIo, nestedLoopIo);
+    	 if (lowestCost.equals(indexIo)) {
+    		 return p;
+    	 } else if (lowestCost.equals(sortMergeIo)) {
+    		 p = sortPlan;
+    	 } else {
+    		 p = nestedPlan;
+    	 }*/
+      }
       return p;
+   }
+   
+   private int getLowestIoCost(int indexIo, int sortMergeIo, int nestedLoopIo) {
+ 	  if (indexIo < sortMergeIo) {
+		  if (indexIo < nestedLoopIo) {
+			  return indexIo;
+		  } else {
+			  return nestedLoopIo;
+		  }
+	  } else {
+		  // sortMergeIo < indexIo to reach else
+		  if (sortMergeIo < nestedLoopIo) {
+			  return sortMergeIo;
+		  } else {
+			  return nestedLoopIo;
+		  }
+	  }
    }
    
    /**
