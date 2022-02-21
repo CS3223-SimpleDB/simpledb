@@ -5,19 +5,24 @@ import simpledb.query.Scan;
 import simpledb.record.Layout;
 import simpledb.tx.Transaction;
 
+/** 
+ * The Scan class for the <i>block nested loops join</i> operator.
+ */
 public class BlockJoinScan implements Scan {
    private Transaction tx;
    private Scan leftScan, rightScan=null, nestedLoopScan;
    private String rightFilename, commonfield;
    private Layout rightLayout;
-   private int chunkSize, nextBlockNumber, rightFilesize;
+   private int blockSize, nextBlockNumber, rightFilesize;
    
    
    /**
-    * Creates the scan class for the product of the LHS scan and a table.
-    * @param lhsscan the LHS scan
-    * @param layout the metadata for the RHS table
+    * Creates the scan class for the block nested loops join of the LHS scan and a table.
     * @param tx the current transaction
+    * @param leftScan the LHS scan
+    * @param rightTableName the name of the RHS table
+    * @param rightTableLayout the metadata for the RHS table
+    * @param commonfield the common joining field between both plans
     */
    public BlockJoinScan(Transaction tx, Scan leftScan, String rightTableName, Layout rightTableLayout, String commonfield) {
       this.tx = tx;
@@ -27,32 +32,30 @@ public class BlockJoinScan implements Scan {
       this.commonfield = commonfield;
       rightFilesize = tx.size(rightFilename);
       int available = tx.availableBuffs();
-      chunkSize = BufferNeeds.bestFactor(available, rightFilesize);
+      blockSize = BufferNeeds.bestFactor(available, rightFilesize);
       beforeFirst();
    }
    
    /**
-    * Positions the scan before the first record.
-    * That is, the LHS scan is positioned at its first record,
-    * and the RHS scan is positioned before the first record of the first chunk.
+    * Positions the LHS and RHS scans before their first records.
     * @see simpledb.query.Scan#beforeFirst()
     */
    public void beforeFirst() {
       nextBlockNumber = 0;
-      useNextChunk();
+      useNextBlock();
    }
    
    /**
     * Moves to the next record in the current scan.
-    * If there are no more records in the current chunk,
-    * then move to the next LHS record and the beginning of that chunk.
-    * If there are no more LHS records, then move to the next chunk
+    * If there are no more records in the current block,
+    * then move to the next LHS record and the beginning of that block.
+    * If there are no more LHS records, then move to the next block
     * and begin again.
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
       while (!nestedLoopScan.next()) 
-         if (!useNextChunk())
+         if (!useNextBlock())
          return false;
       return true;
    }
@@ -104,17 +107,22 @@ public class BlockJoinScan implements Scan {
       return nestedLoopScan.hasField(fldname);
    }
    
-   private boolean useNextChunk() {
+   /**
+    * Retrieves the next block for scanning and joining if possible.
+    * Returns true if there is a next block and false otherwise.
+    * @return
+    */
+   private boolean useNextBlock() {
       if (nextBlockNumber >= rightFilesize)
          return false;
       if (rightScan != null)
          rightScan.close();
-      int end = nextBlockNumber + chunkSize - 1;
+      int end = nextBlockNumber + blockSize - 1;
       if (end >= rightFilesize)
          end = rightFilesize - 1;
-      rightScan = new ChunkScan(tx, rightFilename, rightLayout, nextBlockNumber, end);
+      rightScan = new BlockScan(tx, rightFilename, rightLayout, nextBlockNumber, end);
       leftScan.beforeFirst();
-      nestedLoopScan = new NestedLoopJoinScan(leftScan, rightScan, commonfield);
+      nestedLoopScan = new NestedLoopsJoinScan(leftScan, rightScan, commonfield);
       nextBlockNumber = end + 1;
       return true;
    }

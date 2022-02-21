@@ -14,7 +14,7 @@ public class MultibufferProductScan implements Scan {
    private Scan lhsscan, rhsscan=null, prodscan;
    private String filename;
    private Layout layout;
-   private int chunksize, nextblknum, filesize;
+   private int blockSize, nextblknum, filesize;
    
    
    /**
@@ -30,32 +30,32 @@ public class MultibufferProductScan implements Scan {
       this.layout = layout;
       filesize = tx.size(filename);
       int available = tx.availableBuffs();
-      chunksize = BufferNeeds.bestFactor(available, filesize);
+      blockSize = BufferNeeds.bestFactor(available, filesize);
       beforeFirst();
    }
    
    /**
     * Positions the scan before the first record.
     * That is, the LHS scan is positioned at its first record,
-    * and the RHS scan is positioned before the first record of the first chunk.
+    * and the RHS scan is positioned before the first record of the first block.
     * @see simpledb.query.Scan#beforeFirst()
     */
    public void beforeFirst() {
       nextblknum = 0;
-      useNextChunk();
+      useNextBlock();
    }
    
    /**
     * Moves to the next record in the current scan.
-    * If there are no more records in the current chunk,
-    * then move to the next LHS record and the beginning of that chunk.
-    * If there are no more LHS records, then move to the next chunk
+    * If there are no more records in the current block,
+    * then move to the next LHS record and the beginning of that block.
+    * If there are no more LHS records, then move to the next block
     * and begin again.
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
       while (!prodscan.next()) 
-         if (!useNextChunk())
+         if (!useNextBlock())
          return false;
       return true;
    }
@@ -107,15 +107,15 @@ public class MultibufferProductScan implements Scan {
       return prodscan.hasField(fldname);
    }
    
-   private boolean useNextChunk() {
+   private boolean useNextBlock() {
       if (nextblknum >= filesize)
          return false;
       if (rhsscan != null)
          rhsscan.close();
-      int end = nextblknum + chunksize - 1;
+      int end = nextblknum + blockSize - 1;
       if (end >= filesize)
          end = filesize - 1;
-      rhsscan = new ChunkScan(tx, filename, layout, nextblknum, end);
+      rhsscan = new BlockScan(tx, filename, layout, nextblknum, end);
       lhsscan.beforeFirst();
       prodscan = new ProductScan(lhsscan, rhsscan);
       nextblknum = end + 1;
