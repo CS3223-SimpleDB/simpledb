@@ -1,5 +1,6 @@
 package simpledb.opt;
 
+import java.util.ArrayList;
 import java.util.Map;
 import simpledb.tx.Transaction;
 import simpledb.record.*;
@@ -67,48 +68,41 @@ class TablePlanner {
       if (joinpred == null) {
     	  return null;
       }
-      Plan p = makeIndexJoin(current, currsch);
-      Plan sortMergePlan = makeSortJoin(current, currsch);
-      Plan nestedLoopsPlan = makeNestedLoopJoin(current, currsch);
-      if (p == null) {
-         if (sortMergePlan == null) {
-            if (nestedLoopsPlan == null) {
-               p = makeProductJoin(current, currsch);
-            } else {
-               p = nestedLoopsPlan;
-            }
-         } else {
-            int sortMergeIo = sortMergePlan.blocksAccessed();
-            int nestedLoopsIo = nestedLoopsPlan.blocksAccessed();
-            if (sortMergeIo < nestedLoopsIo) {
-               p = sortMergePlan;
-            } else {
-               p = nestedLoopsPlan;
-            }
-         }
-         return p;
-      } else {
-         return lowestCostPlan(p, sortMergePlan, nestedLoopsPlan);
-      }	
+      ArrayList<Plan> plans = new ArrayList<>();
+      plans.add(makeIndexJoin(current, currsch));
+      plans.add(makeSortJoin(current, currsch));
+      plans.add(makeNestedJoin(current, currsch));
+      Plan cheapestPlan = lowestCostPlan(plans);
+      if (cheapestPlan == null) {
+         return makeProductJoin(current, currsch);
+      }
+      return cheapestPlan;
    }
    
-   private Plan lowestCostPlan(Plan p1, Plan p2, Plan p3) {
-      int p1Cost = p1.blocksAccessed();
-      int p2Cost = p2.blocksAccessed();
-      int p3Cost = p3.blocksAccessed();
-      if (p1Cost < p2Cost) {
-         if (p1Cost < p3Cost) {
-            return p1;
-         } else {
-            return p3;
-         }
-      } else {
-         if (p2Cost < p3Cost) {
-            return p2;
-         } else {
-            return p3;
+   private Plan lowestCostPlan(ArrayList<Plan> plans) {
+      Plan cheapestPlan = null;
+      for (Plan currentPlan : plans) {
+         if (cheapestPlan == null || currentPlan.blocksAccessed() < cheapestPlan.blocksAccessed()) {
+            cheapestPlan = currentPlan;
          }
       }
+      return cheapestPlan;
+   }
+   
+   private Plan addSelectPred(Plan p) {
+      Predicate selectpred = mypred.selectSubPred(myschema);
+      if (selectpred != null)
+         return new SelectPlan(p, selectpred);
+      else
+         return p;
+   }
+   
+   private Plan addJoinPred(Plan p, Schema currsch) {
+      Predicate joinpred = mypred.joinSubPred(currsch, myschema);
+      if (joinpred != null)
+         return new SelectPlan(p, joinpred);
+      else
+         return p;
    }
    
    /**
@@ -120,6 +114,11 @@ class TablePlanner {
    public Plan makeProductPlan(Plan current) {
       Plan p = addSelectPred(myplan);
       return new MultibufferProductPlan(tx, current, p);
+   }
+   
+   private Plan makeProductJoin(Plan current, Schema currsch) {
+      Plan p = makeProductPlan(current);
+      return addJoinPred(p, currsch);
    }
    
    private Plan makeIndexSelect() {
@@ -146,11 +145,6 @@ class TablePlanner {
       return null;
    }
    
-   private Plan makeProductJoin(Plan current, Schema currsch) {
-      Plan p = makeProductPlan(current);
-      return addJoinPred(p, currsch);
-   }
-   
    private Plan makeSortJoin(Plan current, Schema currsch) {
 	   for (String fldname : myschema.fields()) {
 		   String leftfield = mypred.equatesWithField(fldname);
@@ -163,7 +157,7 @@ class TablePlanner {
 	   return null;
    }
    
-   private Plan makeNestedLoopJoin(Plan current, Schema currsch) {
+   private Plan makeNestedJoin(Plan current, Schema currsch) {
       for (String fldname : myschema.fields()) {
          String commonfield = mypred.equatesWithField(fldname);
          if (commonfield != null && currsch.hasField(commonfield)) {
@@ -173,21 +167,5 @@ class TablePlanner {
          }
       }
       return null;
-   }
-   
-   private Plan addSelectPred(Plan p) {
-      Predicate selectpred = mypred.selectSubPred(myschema);
-      if (selectpred != null)
-         return new SelectPlan(p, selectpred);
-      else
-         return p;
-   }
-   
-   private Plan addJoinPred(Plan p, Schema currsch) {
-      Predicate joinpred = mypred.joinSubPred(currsch, myschema);
-      if (joinpred != null)
-         return new SelectPlan(p, joinpred);
-      else
-         return p;
    }
 }
