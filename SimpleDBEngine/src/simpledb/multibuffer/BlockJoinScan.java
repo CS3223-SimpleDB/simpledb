@@ -7,10 +7,10 @@ import simpledb.tx.Transaction;
 
 public class BlockJoinScan implements Scan {
    private Transaction tx;
-   private Scan lhsscan, rhsscan=null, nestedLoopScan;
-   private String filename, commonfield;
-   private Layout layout;
-   private int chunksize, nextblknum, filesize;
+   private Scan leftScan, rightScan=null, nestedLoopScan;
+   private String rightFilename, commonfield;
+   private Layout rightLayout;
+   private int chunkSize, nextBlockNumber, rightFilesize;
    
    
    /**
@@ -19,15 +19,15 @@ public class BlockJoinScan implements Scan {
     * @param layout the metadata for the RHS table
     * @param tx the current transaction
     */
-   public BlockJoinScan(Transaction tx, Scan lhsscan, String tblname, Layout layout, String commonfield) {
+   public BlockJoinScan(Transaction tx, Scan leftScan, String rightTableName, Layout rightTableLayout, String commonfield) {
       this.tx = tx;
-      this.lhsscan = lhsscan;
-      this.filename = tblname + ".tbl";
-      this.layout = layout;
+      this.leftScan = leftScan;
+      this.rightFilename = rightTableName + ".tbl";
+      this.rightLayout = rightTableLayout;
       this.commonfield = commonfield;
-      filesize = tx.size(filename);
+      rightFilesize = tx.size(rightFilename);
       int available = tx.availableBuffs();
-      chunksize = BufferNeeds.bestFactor(available, filesize);
+      chunkSize = BufferNeeds.bestFactor(available, rightFilesize);
       beforeFirst();
    }
    
@@ -38,7 +38,7 @@ public class BlockJoinScan implements Scan {
     * @see simpledb.query.Scan#beforeFirst()
     */
    public void beforeFirst() {
-      nextblknum = 0;
+      nextBlockNumber = 0;
       useNextChunk();
    }
    
@@ -105,17 +105,17 @@ public class BlockJoinScan implements Scan {
    }
    
    private boolean useNextChunk() {
-      if (nextblknum >= filesize)
+      if (nextBlockNumber >= rightFilesize)
          return false;
-      if (rhsscan != null)
-         rhsscan.close();
-      int end = nextblknum + chunksize - 1;
-      if (end >= filesize)
-         end = filesize - 1;
-      rhsscan = new ChunkScan(tx, filename, layout, nextblknum, end);
-      lhsscan.beforeFirst();
-      nestedLoopScan = new NestedLoopJoinScan(lhsscan, rhsscan, commonfield);
-      nextblknum = end + 1;
+      if (rightScan != null)
+         rightScan.close();
+      int end = nextBlockNumber + chunkSize - 1;
+      if (end >= rightFilesize)
+         end = rightFilesize - 1;
+      rightScan = new ChunkScan(tx, rightFilename, rightLayout, nextBlockNumber, end);
+      leftScan.beforeFirst();
+      nestedLoopScan = new NestedLoopJoinScan(leftScan, rightScan, commonfield);
+      nextBlockNumber = end + 1;
       return true;
    }
 }

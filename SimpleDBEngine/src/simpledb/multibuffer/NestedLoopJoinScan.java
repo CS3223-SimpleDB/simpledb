@@ -41,15 +41,13 @@ public class NestedLoopJoinScan implements Scan {
     * @see simpledb.query.Scan#next()
     */
    public boolean next() {
-      if (rhs.next()) {
-            if (rhs.getVal(commonfield).equals(lhs.getVal(commonfield))) {
-               return true;
-            }
-            return rhs.next();
-      } else {
-         rhs.beforeFirst();
-         return rhs.next() && lhs.next();
+      while (rhs.next()) {
+         if (rhs.getVal(commonfield).equals(lhs.getVal(commonfield))) {
+            return true;
+         }
       }
+      rhs.beforeFirst();
+      return rhs.next() && lhs.next();
    }
 
    /** 

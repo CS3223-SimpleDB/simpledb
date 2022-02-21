@@ -39,9 +39,9 @@ public class BlockJoinPlan implements Plan {
     * @see simpledb.plan.Plan#open()
     */
    public Scan open() {
-      Scan leftscan = lhs.open();
-      TempTable tt = copyRecordsFrom(rhs);
-      return new BlockJoinScan(tx, leftscan, tt.tableName(), tt.getLayout(), commonfield);
+      Scan leftScan = lhs.open();
+      TempTable tempRightTable = copyRecordsFrom(rhs);
+      return new BlockJoinScan(tx, leftScan, tempRightTable.tableName(), tempRightTable.getLayout(), commonfield);
    }
 
    /**
