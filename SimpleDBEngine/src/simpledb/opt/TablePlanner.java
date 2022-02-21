@@ -54,10 +54,10 @@ class TablePlanner {
    }
    
    /**
-    * Constructs a join plan of the specified plan
-    * and the table.  The plan will use an indexjoin, if possible.
-    * (Which means that if an indexselect is also possible,
-    * the indexjoin operator takes precedence.)
+    * Constructs a join plan of the specified plan and the table.
+    * The plan will use the join with the lowest block accesses.
+    * The plan will use the cross product if none of the given 
+    * joins are suitable.
     * The method returns null if no join is possible.
     * @param current the specified plan
     * @return a join plan of the plan and this table
@@ -79,10 +79,19 @@ class TablePlanner {
       return cheapestPlan;
    }
    
-   private Plan lowestCostPlan(ArrayList<Plan> plans) {
+   /**
+    * Compares the block accesses of every join plan given.
+    * Returns the join plan with the lowest block accesses.
+    * Returns null otherwise.
+    * @param plans the given list of join plans
+    * @return the join plan with the lowest block accesses
+    */
+   private Plan lowestCostPlan(ArrayList<Plan> joinPlans) {
       Plan cheapestPlan = null;
-      for (Plan currentPlan : plans) {
-         if (cheapestPlan == null || currentPlan.blocksAccessed() < cheapestPlan.blocksAccessed()) {
+      for (Plan currentPlan : joinPlans) {
+         if (currentPlan == null) {
+            continue;
+         } else if (cheapestPlan == null || currentPlan.blocksAccessed() < cheapestPlan.blocksAccessed()) {
             cheapestPlan = currentPlan;
          }
       }
@@ -157,6 +166,14 @@ class TablePlanner {
 	   return null;
    }
    
+   /**
+    * Checks for common join fields between the two joining schemas.
+    * Constructs a new BlockJoinPlan if at least one common join field is found.
+    * Returns null if there are no common join fields.
+    * @param current the specified plan
+    * @param currsch the schema of the specified plan
+    * @return the join predicate of the newly constructed BlockJoinPlan
+    */
    private Plan makeNestedJoin(Plan current, Schema currsch) {
       for (String fldname : myschema.fields()) {
          String commonfield = mypred.equatesWithField(fldname);
