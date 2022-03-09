@@ -33,10 +33,10 @@ public class MultibufferProductPlan implements Plan {
    /**
     * A scan for this query is created and returned, as follows.
     * First, the method materializes its LHS and RHS queries.
-    * It then determines the optimal chunk size,
+    * It then determines the optimal block size,
     * based on the size of the materialized RHS file and the
     * number of available buffers.
-    * It creates a chunk plan for each chunk, saving them in a list.
+    * It creates a block plan for each block, saving them in a list.
     * Finally, it creates a multiscan for this list of plans,
     * and returns that scan.
     * @see simpledb.plan.Plan#open()
@@ -51,19 +51,19 @@ public class MultibufferProductPlan implements Plan {
     * Returns an estimate of the number of block accesses
     * required to execute the query. The formula is:
     * <pre> B(product(p1,p2)) = B(p2) + B(p1)*C(p2) </pre>
-    * where C(p2) is the number of chunks of p2.
+    * where C(p2) is the number of blocks of p2.
     * The method uses the current number of available buffers
     * to calculate C(p2), and so this value may differ
     * when the query scan is opened.
     * @see simpledb.plan.Plan#blocksAccessed()
     */
    public int blocksAccessed() {
-      // this guesses at the # of chunks
-      int avail = tx.availableBuffs();
-      int size = new MaterializePlan(tx, rhs).blocksAccessed();
-      int numchunks = size / avail;
+      // this guesses at the # of blocks
+      int avail = tx.availableBuffs(); //number of buffers
+      int size = new MaterializePlan(tx, rhs).blocksAccessed(); //number of accesses (IOs)
+      int numOfBlocks = size / avail; //number of blocks
       return rhs.blocksAccessed() +
-            (lhs.blocksAccessed() * numchunks);
+            (lhs.blocksAccessed() * numOfBlocks); //cost (IOs)
    }
 
    /**

@@ -1,12 +1,15 @@
 package simpledb.opt;
 
+import java.util.ArrayList;
 import java.util.Map;
 import simpledb.tx.Transaction;
 import simpledb.record.*;
 import simpledb.query.*;
 import simpledb.metadata.*;
 import simpledb.index.planner.*;
+import simpledb.materialize.MergeJoinPlan;
 import simpledb.multibuffer.MultibufferProductPlan;
+import simpledb.multibuffer.BlockJoinPlan;
 import simpledb.plan.*;
 
 /**
@@ -51,10 +54,10 @@ class TablePlanner {
    }
    
    /**
-    * Constructs a join plan of the specified plan
-    * and the table.  The plan will use an indexjoin, if possible.
-    * (Which means that if an indexselect is also possible,
-    * the indexjoin operator takes precedence.)
+    * Constructs a join plan of the specified plan and the table.
+    * The plan will use the join with the lowest block accesses.
+    * The plan will use the cross product if none of the given 
+    * joins are suitable.
     * The method returns null if no join is possible.
     * @param current the specified plan
     * @return a join plan of the plan and this table
@@ -62,52 +65,37 @@ class TablePlanner {
    public Plan makeJoinPlan(Plan current) {
       Schema currsch = current.schema();
       Predicate joinpred = mypred.joinSubPred(myschema, currsch);
-      if (joinpred == null)
-         return null;
-      Plan p = makeIndexJoin(current, currsch);
-      if (p == null)
-         p = makeProductJoin(current, currsch);
-      return p;
+      if (joinpred == null) {
+    	  return null;
+      }
+      ArrayList<Plan> plans = new ArrayList<>();
+      plans.add(makeIndexJoin(current, currsch));
+      plans.add(makeSortJoin(current, currsch));
+      plans.add(makeNestedJoin(current, currsch));
+      Plan cheapestPlan = lowestCostPlan(plans);
+      if (cheapestPlan == null) {
+         return makeProductJoin(current, currsch);
+      }
+      return cheapestPlan;
    }
    
    /**
-    * Constructs a product plan of the specified plan and
-    * this table.
-    * @param current the specified plan
-    * @return a product plan of the specified plan and this table
+    * Compares the block accesses of every join plan given.
+    * Returns the join plan with the lowest block accesses.
+    * Returns null otherwise.
+    * @param plans the given list of join plans
+    * @return the join plan with the lowest block accesses
     */
-   public Plan makeProductPlan(Plan current) {
-      Plan p = addSelectPred(myplan);
-      return new MultibufferProductPlan(tx, current, p);
-   }
-   
-   private Plan makeIndexSelect() {
-      for (String fldname : indexes.keySet()) {
-         Constant val = mypred.equatesWithConstant(fldname);
-         if (val != null) {
-            IndexInfo ii = indexes.get(fldname);
-            return new IndexSelectPlan(myplan, ii, val);
+   private Plan lowestCostPlan(ArrayList<Plan> joinPlans) {
+      Plan cheapestPlan = null;
+      for (Plan currentPlan : joinPlans) {
+         if (currentPlan == null) {
+            continue;
+         } else if (cheapestPlan == null || currentPlan.blocksAccessed() < cheapestPlan.blocksAccessed()) {
+            cheapestPlan = currentPlan;
          }
       }
-      return null;
-   }
-   
-   private Plan makeIndexJoin(Plan current, Schema currsch) {
-      for (String fldname : indexes.keySet()) {
-         String outerfield = mypred.equatesWithField(fldname);
-         if (outerfield != null && currsch.hasField(outerfield)) {
-            IndexInfo ii = indexes.get(fldname);
-            Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
-            p = addSelectPred(p);
-            return addJoinPred(p, currsch);
-         }
-      }
-      return null;
-   }
-   
-   private Plan makeProductJoin(Plan current, Schema currsch) {
-      Plan p = makeProductPlan(current);
-      return addJoinPred(p, currsch);
+      return cheapestPlan;
    }
    
    private Plan addSelectPred(Plan p) {
@@ -124,5 +112,77 @@ class TablePlanner {
          return new SelectPlan(p, joinpred);
       else
          return p;
+   }
+   
+   /**
+    * Constructs a product plan of the specified plan and
+    * this table.
+    * @param current the specified plan
+    * @return a product plan of the specified plan and this table
+    */
+   public Plan makeProductPlan(Plan current) {
+      Plan p = addSelectPred(myplan);
+      return new MultibufferProductPlan(tx, current, p);
+   }
+   
+   private Plan makeProductJoin(Plan current, Schema currsch) {
+      Plan p = makeProductPlan(current);
+      return addJoinPred(p, currsch);
+   }
+   
+   private Plan makeIndexSelect() {
+      for (String fldname : indexes.keySet()) {
+         Constant val = mypred.equatesWithConstantPlannerChecks(fldname);
+         if (val != null) {
+            IndexInfo ii = indexes.get(fldname);
+            return new IndexSelectPlan(myplan, ii, val);
+         }
+      }
+      return null;
+   }
+   
+   private Plan makeIndexJoin(Plan current, Schema currsch) {
+      for (String fldname : indexes.keySet()) {
+         String outerfield = mypred.equatesWithFieldPlannerChecks(fldname);
+         if (outerfield != null && currsch.hasField(outerfield)) {
+            IndexInfo ii = indexes.get(fldname);
+            Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
+            p = addSelectPred(p);
+            return addJoinPred(p, currsch);
+         }
+      }
+      return null;
+   }
+   
+   private Plan makeSortJoin(Plan current, Schema currsch) {
+	   for (String fldname : myschema.fields()) {
+		   String leftfield = mypred.equatesWithField(fldname);
+		   if (leftfield != null && currsch.hasField(leftfield)) {
+			   Plan p = new MergeJoinPlan(tx, current, myplan, leftfield, fldname);
+			   p = addSelectPred(p);
+			   return addJoinPred(p, currsch);
+		   }
+	   }
+	   return null;
+   }
+   
+   /**
+    * Checks for common join fields between the two joining schemas.
+    * Constructs a new BlockJoinPlan if at least one common join field is found.
+    * Returns null if there are no common join fields.
+    * @param current the specified plan
+    * @param currsch the schema of the specified plan
+    * @return the join predicate of the newly constructed BlockJoinPlan
+    */
+   private Plan makeNestedJoin(Plan current, Schema currsch) {
+      for (String fldname : myschema.fields()) {
+         String commonfield = mypred.equatesWithField(fldname);
+         if (commonfield != null && currsch.hasField(commonfield)) {
+            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield);
+            p = addSelectPred(p);
+            return addJoinPred(p, currsch);
+         }
+      }
+      return null;
    }
 }

@@ -46,7 +46,7 @@ public class SortPlan implements Plan {
       Scan src = p.open();
       List<TempTable> runs = splitIntoRuns(src);
       src.close();
-      while (runs.size() > 2)
+      while (runs.size() > 1)
          runs = doAMergeIteration(runs);
       return new SortScan(runs, comp);
    }
@@ -106,7 +106,8 @@ public class SortPlan implements Plan {
           if (!resultList.isEmpty()) {
         	  String direction = resultList.get(0);
         	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  if((direction.equals("asc") && (resultVal < 0)) ||  (direction.equals("desc") && (resultVal > 0))) {
+        	  if((direction.equals("asc") && (resultVal < 0)) ||
+        			  (direction.equals("desc") && (resultVal > 0))) {
         		  currentscan.close();
                   currenttemp = new TempTable(tx, sch);
                   temps.add(currenttemp);

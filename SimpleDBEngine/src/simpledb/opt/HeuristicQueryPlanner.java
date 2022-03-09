@@ -32,22 +32,6 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
-	  Predicate pred = data.pred();
-	  List<Term> terms = pred.getTerms();
-	  boolean checkInequalityTerms = false;
-	  for (Term t : terms) {
-	      if (t.isInequality()) {
-	          checkInequalityTerms = true;
-	    	  break;
-	      }
-	  }
-	  
-	  if (checkInequalityTerms) {
-		  // use basic planner
-		  QueryPlanner basicQueryPlanner = new BasicQueryPlanner(mdm);
-		  Plan basicPlan = basicQueryPlanner.createPlan(data, tx);
-		  return basicPlan;
-	  }
       
       // Step 1:  Create a TablePlanner object for each mentioned table
       for (String tblname : data.tables()) {
@@ -89,6 +73,7 @@ public class HeuristicQueryPlanner implements QueryPlanner {
          }
       }
       tableplanners.remove(besttp);
+
       return bestplan;
    }
    

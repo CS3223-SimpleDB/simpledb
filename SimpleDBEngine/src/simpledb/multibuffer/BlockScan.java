@@ -8,10 +8,10 @@ import simpledb.tx.Transaction;
 import simpledb.record.*;
 
 /**
- * The class for the <i>chunk</i> operator.
+ * The class for the <i>block</i> operator.
  * @author Edward Sciore
  */
-public class ChunkScan implements Scan {
+public class BlockScan implements Scan {
    private List<RecordPage> buffs = new ArrayList<>();
    private Transaction tx;
    private String filename;
@@ -21,13 +21,13 @@ public class ChunkScan implements Scan {
    private int currentslot;
 
    /**
-    * Create a chunk consisting of the specified pages. 
-    * @param layout the metadata for the chunked table
+    * Create a block consisting of the specified pages. 
+    * @param layout the metadata for the table in blocks
     * @param startbnum the starting block number
     * @param endbnum  the ending block number
     * @param tx the current transaction
     */ 
-   public ChunkScan(Transaction tx, String filename, Layout layout, int startbnum, int endbnum) {
+   public BlockScan(Transaction tx, String filename, Layout layout, int startbnum, int endbnum) {
       this.tx = tx;
       this.filename = filename;
       this.layout = layout;
@@ -58,10 +58,10 @@ public class ChunkScan implements Scan {
    }
 
    /**
-    * Moves to the next record in the current block of the chunk.
+    * Moves to the next record in the current block of the block.
     * If there are no more records, then make
     * the next block be current.
-    * If there are no more blocks in the chunk, return false.
+    * If there are no more blocks in the block, return false.
     * @see simpledb.query.Scan#next()  
     */
    public boolean next() {
