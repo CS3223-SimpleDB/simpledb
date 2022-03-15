@@ -3,6 +3,7 @@ package simpledb.parse;
 import java.util.*;
 import simpledb.query.*;
 import simpledb.record.*;
+import simpledb.materialize.*;
 
 /**
  * The SimpleDB parser.
@@ -19,6 +20,14 @@ public class Parser {
    
    public String field() {
       return lex.eatId();
+   }
+   
+   public String aggregate(String fn) {
+      lex.eatKeyword(fn);
+      lex.eatDelim('(');
+      String aggregatedAttribute = field();
+      lex.eatDelim(')');
+      return aggregatedAttribute;
    }
    
    public Constant constant() {
@@ -54,15 +63,27 @@ public class Parser {
 // Methods for parsing queries
    
    public QueryData query() {
-
       lex.eatKeyword("select");
-      List<String> fields = selectList();
+      boolean isDistinct = false;
+      if (lex.matchKeyword("distinct")) {
+         lex.eatKeyword("distinct");
+         isDistinct = true;
+      }
+      List<String> fields = new ArrayList<String>();
+      List<AggregationFn> aggregates = new ArrayList<AggregationFn>();
+      selectList(fields, aggregates);
       lex.eatKeyword("from");
       Collection<String> tables = tableList();
       Predicate pred = new Predicate();
       if (lex.matchKeyword("where")) {
          lex.eatKeyword("where");
          pred = predicate();
+      }
+      List<String> groupByAttributes = new ArrayList<String>();
+      if (lex.matchKeyword("group")) {
+         lex.eatKeyword("group");
+         lex.eatKeyword("by");
+         groupByList(groupByAttributes);
       }
       List<String> orderByAttributes = new ArrayList<String>();
       List<String> orderByDirection = new ArrayList<String>();
@@ -71,17 +92,38 @@ public class Parser {
          lex.eatKeyword("by");
          orderByList(orderByAttributes, orderByDirection);
       }
-      return new QueryData(fields, tables, pred, orderByAttributes, orderByDirection);
+      return new QueryData(fields, tables, pred, aggregates,
+            orderByAttributes, orderByDirection, groupByAttributes, isDistinct);
    }
    
-   private List<String> selectList() {
-      List<String> L = new ArrayList<String>();
-      L.add(field());
+   private void selectList(List<String> fields, List<AggregationFn> aggregates) {
+      if (lex.matchKeyword("sum")) {
+         String fldname = aggregate("sum");
+         fields.add(fldname);
+         aggregates.add(new SumFn(fldname));
+      } else if (lex.matchKeyword("count")) {
+         String fldname = aggregate("count");
+         fields.add(fldname);
+         aggregates.add(new CountFn(fldname));
+      } else if (lex.matchKeyword("avg")) {
+         String fldname = aggregate("avg");
+         fields.add(fldname);
+         aggregates.add(new AverageFn(fldname));
+      } else if (lex.matchKeyword("min")) {
+         String fldname = aggregate("min");
+         fields.add(fldname);
+         aggregates.add(new MinFn(fldname));
+      } else if (lex.matchKeyword("max")) {
+         String fldname = aggregate("max");
+         fields.add(fldname);
+         aggregates.add(new MaxFn(fldname));
+      } else {
+         fields.add(field());
+      }
       if (lex.matchDelim(',')) {
          lex.eatDelim(',');
-         L.addAll(selectList());
+         selectList(fields, aggregates);
       }
-      return L;
    }
    
    private Collection<String> tableList() {
@@ -108,6 +150,14 @@ public class Parser {
       if (lex.matchDelim(',')) {
          lex.eatDelim(',');
          orderByList(orderByAttributes, orderByDirection);
+      }
+   }
+   
+   private void groupByList(List<String> groupByAttributes) {
+      groupByAttributes.add(field());
+      if (lex.matchDelim(',')) {
+         lex.eatDelim(',');
+         groupByList(groupByAttributes);
       }
    }
    
