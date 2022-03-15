@@ -71,22 +71,29 @@ public class SortScan implements Scan {
       if (!hasmore1 && !hasmore2)
          return false;
       else if (hasmore1 && hasmore2) {
-    	  List<String> resultList = comp.compareSort(s1, s2);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  
-        	  if(direction.equals("asc") && (resultVal < 0)) {
-        		  currentscan = s1;
-        	  } else if (direction.equals("desc") && (resultVal > 0)) {
-        		  currentscan = s1;
-        	  } else {
-        		  currentscan = s2;
-        	  }
-          } else {
-        	  currentscan = s2;
-          } 
-            
+    	  if (comp.isDirectionsPresent()) {
+        	  List<String> resultList = comp.compareSort(s1, s2);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  
+            	  if(direction.equals("asc") && (resultVal < 0)) {
+            		  currentscan = s1;
+            	  } else if (direction.equals("desc") && (resultVal > 0)) {
+            		  currentscan = s1;
+            	  } else {
+            		  currentscan = s2;
+            	  }
+              } else {
+            	  currentscan = s2;
+              } 
+    	  } else {
+    	      if (comp.compare(s1, s2) < 0) {
+    	          currentscan = s1;
+    	      } else {
+    	          currentscan = s2;
+    	      }
+    	  }
       }
       else if (hasmore1)
          currentscan = s1;

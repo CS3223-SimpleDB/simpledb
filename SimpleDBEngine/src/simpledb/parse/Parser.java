@@ -54,6 +54,7 @@ public class Parser {
 // Methods for parsing queries
    
    public QueryData query() {
+
       lex.eatKeyword("select");
       List<String> fields = selectList();
       lex.eatKeyword("from");

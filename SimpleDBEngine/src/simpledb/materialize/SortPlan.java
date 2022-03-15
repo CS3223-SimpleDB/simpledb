@@ -43,10 +43,11 @@ public class SortPlan implements Plan {
     * @see simpledb.plan.Plan#open()
     */
    public Scan open() {
+	  System.out.println("sort plan cheapest");
       Scan src = p.open();
       List<TempTable> runs = splitIntoRuns(src);
       src.close();
-      while (runs.size() > 1)
+      while (runs.size() > 2)
          runs = doAMergeIteration(runs);
       return new SortScan(runs, comp);
    }
@@ -98,22 +99,38 @@ public class SortPlan implements Plan {
       src.beforeFirst();
       if (!src.next())
          return temps;
+      
       TempTable currenttemp = new TempTable(tx, sch);
       temps.add(currenttemp);
       UpdateScan currentscan = currenttemp.open();
       while (copy(src, currentscan)) {
-    	  List<String> resultList = comp.compareSort(src, currentscan);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  if((direction.equals("asc") && (resultVal < 0)) ||
-        			  (direction.equals("desc") && (resultVal > 0))) {
-        		  currentscan.close();
-                  currenttemp = new TempTable(tx, sch);
-                  temps.add(currenttemp);
-                  currentscan = (UpdateScan) currenttemp.open();
-        	  } 
-          } 
+    	  List<String> resultList;
+    	  
+    	  // if directions are present, sort plan is used for order by clause
+    	  if (comp.isDirectionsPresent()) {
+    		  resultList = comp.compareSort(src, currentscan);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  if((direction.equals("asc") && (resultVal < 0)) ||
+            			  (direction.equals("desc") && (resultVal > 0))) {
+            		  currentscan.close();
+                      currenttemp = new TempTable(tx, sch);
+                      temps.add(currenttemp);
+                      currentscan = (UpdateScan) currenttemp.open();
+            	  }
+              } 
+    	  } else {
+    		  // else sort plan is used for merge sort join, or those without order
+    		  System.out.println("i am no direction");
+    		  if (comp.compare(src, currentscan) < 0) {
+    		         // start a new run
+    		         currentscan.close();
+    		         currenttemp = new TempTable(tx, sch);
+    		         temps.add(currenttemp);
+    		         currentscan = (UpdateScan) currenttemp.open();
+    		  }
+    	  }  
       }
 
       currentscan.close();
@@ -141,22 +158,27 @@ public class SortPlan implements Plan {
       boolean hasmore1 = src1.next();
       boolean hasmore2 = src2.next();
       while (hasmore1 && hasmore2) {
-    	  List<String> resultList = comp.compareSort(src1, src2);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  
-        	  if(direction.equals("asc") && (resultVal < 0)) {
-        		  hasmore1 = copy(src1, dest);
-        	  } else if (direction.equals("desc") && (resultVal > 0)) {
-        		  hasmore1 = copy(src1, dest);
-        	  } else {
-        		  hasmore2 = copy(src2, dest);
-        	  }
-          } else {
-  		      hasmore2 = copy(src2, dest);
-          }
-
+    	  if (comp.isDirectionsPresent()) {
+        	  List<String> resultList = comp.compareSort(src1, src2);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  
+            	  if(direction.equals("asc") && (resultVal < 0)) {
+            		  hasmore1 = copy(src1, dest);
+            	  } else if (direction.equals("desc") && (resultVal > 0)) {
+            		  hasmore1 = copy(src1, dest);
+            	  } else {
+            		  hasmore2 = copy(src2, dest);
+            	  }
+              } 
+    	  } else {
+    		  if (comp.compare(src1, src2) < 0) {
+    			  hasmore1 = copy(src1, dest);
+    		  } else {
+ 		         hasmore2 = copy(src2, dest);    			  
+    		  }
+    	  }
       }
 
       if (hasmore1)

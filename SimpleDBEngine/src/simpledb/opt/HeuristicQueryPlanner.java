@@ -1,5 +1,6 @@
 package simpledb.opt;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import simpledb.tx.Transaction;
 import simpledb.metadata.MetadataMgr;
@@ -32,7 +33,7 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
-      
+	  
       // Step 1:  Create a TablePlanner object for each mentioned table
       for (String tblname : data.tables()) {
          TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
@@ -51,6 +52,8 @@ public class HeuristicQueryPlanner implements QueryPlanner {
             currentplan = getLowestProductPlan(currentplan);
       }
       
+      System.out.println("checking buffers");
+      System.out.println(tx.availableBuffs());
       // Step 4.  Project on the field names and return
       Plan p = new ProjectPlan(currentplan, data.fields());
       

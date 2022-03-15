@@ -10,6 +10,7 @@ import simpledb.index.planner.*;
 import simpledb.materialize.MergeJoinPlan;
 import simpledb.multibuffer.MultibufferProductPlan;
 import simpledb.multibuffer.BlockJoinPlan;
+import simpledb.multibuffer.HashJoinPlan;
 import simpledb.plan.*;
 
 /**
@@ -69,9 +70,10 @@ class TablePlanner {
     	  return null;
       }
       ArrayList<Plan> plans = new ArrayList<>();
-      plans.add(makeIndexJoin(current, currsch));
-      plans.add(makeSortJoin(current, currsch));
-      plans.add(makeNestedJoin(current, currsch));
+      //plans.add(makeIndexJoin(current, currsch));
+      //plans.add(makeSortJoin(current, currsch));
+      //plans.add(makeNestedJoin(current, currsch));
+      plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
          return makeProductJoin(current, currsch);
@@ -135,6 +137,7 @@ class TablePlanner {
          Constant val = mypred.equatesWithConstantPlannerChecks(fldname);
          if (val != null) {
             IndexInfo ii = indexes.get(fldname);
+            System.out.println("i am making index select");
             return new IndexSelectPlan(myplan, ii, val);
          }
       }
@@ -143,8 +146,13 @@ class TablePlanner {
    
    private Plan makeIndexJoin(Plan current, Schema currsch) {
       for (String fldname : indexes.keySet()) {
+    	 
          String outerfield = mypred.equatesWithFieldPlannerChecks(fldname);
          if (outerfield != null && currsch.hasField(outerfield)) {
+        	System.out.println("check which field matches");
+        	System.out.println(fldname);
+        	System.out.println(outerfield);
+        	
             IndexInfo ii = indexes.get(fldname);
             Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
             p = addSelectPred(p);
@@ -159,6 +167,28 @@ class TablePlanner {
 		   String leftfield = mypred.equatesWithField(fldname);
 		   if (leftfield != null && currsch.hasField(leftfield)) {
 			   Plan p = new MergeJoinPlan(tx, current, myplan, leftfield, fldname);
+			   p = addSelectPred(p);
+			   return addJoinPred(p, currsch);
+		   }
+	   }
+	   return null;
+   }
+   
+   
+   private Plan makeHashJoin(Plan current, Schema currsch) {
+	   for (String fldname : myschema.fields()) {
+		   // if the condition has a field = field condition
+		   String leftfield = mypred.equatesWithField(fldname);
+		   if (leftfield != null && currsch.hasField(leftfield)) {
+			   /* comment out this check for v1 of hash join, assuming no need recursive partition
+		   	   if (tx.availableBuffs() < myplan.recordsOutput()) {
+		   		   Plan p = new MultibufferProductPlan(tx, current, myplan);
+		   		   p = addSelectPred(p);
+		   		   return addJoinPred(p, currsch);
+		   	   }
+		   	   */
+		   	   // since size of T2 > available buffer, create hash join plan
+			   Plan p = new HashJoinPlan(tx, current, myplan, leftfield, fldname);
 			   p = addSelectPred(p);
 			   return addJoinPred(p, currsch);
 		   }
