@@ -33,17 +33,17 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
-	  
+      
       // Step 1:  Create a TablePlanner object for each mentioned table
       for (String tblname : data.tables()) {
          TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
          tableplanners.add(tp);
       }
       
-      // Step 2:  Choose the lowest-size plan to begin the join order
+      // Step 3:  Choose the lowest-size plan to begin the join order
       Plan currentplan = getLowestSelectPlan();
       
-      // Step 3:  Repeatedly add a plan to the join order
+      // Step 4:  Repeatedly add a plan to the join order
       while (!tableplanners.isEmpty()) {
          Plan p = getLowestJoinPlan(currentplan);
          if (p != null)
@@ -54,14 +54,27 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       
       System.out.println("checking buffers");
       System.out.println(tx.availableBuffs());
-      // Step 4.  Project on the field names and return
+      // Step 5.  Project on the field names
       Plan p = new ProjectPlan(currentplan, data.fields());
       
-      if (data.orderByAttributes().isEmpty()) {
-          return p;
+      // Step 6.  Group by the given field names, if any
+      //          Else aggregate the given field names, if any
+      if (!data.groupByAttributes().isEmpty()) {
+         p = new GroupByPlan(tx, p, data.groupByAttributes(), data.aggregates());
+      } else if (!data.aggregates().isEmpty()) {
+         p = new AggregatePlan(tx, p, data.aggregates());
       }
       
-      p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      // Step 7.  Order by the given field names in the given direction, if any
+      if (!data.orderByAttributes().isEmpty()) {
+         p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      }
+      
+      // Step 8.  Remove duplicates if queried for
+      if (data.isDistinct()) {
+         p = new DistinctPlan(tx, p, data.fields());
+      }
+      
       return p;
    }
    
