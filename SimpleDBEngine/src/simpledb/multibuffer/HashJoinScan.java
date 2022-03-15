@@ -51,15 +51,27 @@ public class HashJoinScan implements Scan {
 	  * @see simpledb.query.Scan#hasField(java.lang.String)
 	  */
 	public boolean hasField(String fldname) {
-		return rhs.hasField(fldname);
+		return rhs.hasField(fldname) || tempScan.hasField(fldname);
 	}
 
 	public boolean next() {
-		// Step 1: call next function of the probe function
+		
+		// Step 1: check if the partition from current scan has been looped finish
+		if (tempScan != null) {
+			while(tempScan.next()) {
+				// get partition val
+				Constant partitionVal = tempScan.getVal(fldname1);
+				// get current scan value
+				Constant value = rhs.getVal(fldname2);
+				if (partitionVal.equals(value)) {
+					return true;
+				}
+			}
+			tempScan.close();
+		}
+		// Step 2: call next function of the probe function
 		boolean hasmore = rhs.next();
 		while (hasmore) {
-
-			
 			// Step 2: process record to get the value of the field to join
 			Constant value = rhs.getVal(fldname2);
 			// Step 3: process value to obtain partition to match
@@ -76,12 +88,6 @@ public class HashJoinScan implements Scan {
 				while(partitionScan.next()) {
 					Constant partitionVal = partitionScan.getVal(fldname1);
 					if (value.equals(partitionVal)) {
-						
-						// Clean up from previous step
-						if (tempScan != null) {
-							tempScan.close();
-						}
-						
 						tempScan = partitionScan;
 						return true;
 					}
@@ -117,7 +123,6 @@ public class HashJoinScan implements Scan {
 	
 	public void close() {
 		// close the probe table and temp table
-		tempScan.close();
 		rhs.close();
 	}
 }
