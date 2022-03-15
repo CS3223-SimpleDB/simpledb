@@ -39,5 +39,14 @@ public class Constant implements Comparable<Constant> {
    
    public String toString() {
       return (ival != null) ? ival.toString() : sval.toString();
-   }   
+   }
+   
+   /**
+    * Add another Constant's ival to this ival.
+    * @param other the other Constant
+    */
+   public void add(Constant other) {
+      int otherival = other.asInt();
+      ival += otherival;
+   }
 }
