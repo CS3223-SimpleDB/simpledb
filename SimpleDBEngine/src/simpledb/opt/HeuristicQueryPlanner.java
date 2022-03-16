@@ -1,13 +1,10 @@
 package simpledb.opt;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import simpledb.tx.Transaction;
 import simpledb.metadata.MetadataMgr;
 import simpledb.parse.QueryData;
 import simpledb.plan.*;
-import simpledb.query.Predicate;
-import simpledb.query.Term;
 import simpledb.materialize.*;
 
 /**
@@ -40,14 +37,9 @@ public class HeuristicQueryPlanner implements QueryPlanner {
          tableplanners.add(tp);
       }
       
-      
-
-      
       // Step 3:  Choose the lowest-size plan to begin the join order
       Plan currentplan = getLowestSelectPlan();
-      
 
-      
       // Step 4:  Repeatedly add a plan to the join order
       while (!tableplanners.isEmpty()) {
          Plan p = getLowestJoinPlan(currentplan);
@@ -59,15 +51,16 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       
       System.out.println("checking buffers");
       System.out.println(tx.availableBuffs());
+      
       // Step 5.  Project on the field names
       Plan p = new ProjectPlan(currentplan, data.fields());
       
       // Step 6.  Group by the given field names, if any
       //          Else aggregate the given field names, if any
       if (!data.groupByAttributes().isEmpty()) {
-          p = new GroupByPlan(tx, p, data.groupByAttributes(), data.aggregates());
+          currentplan = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates());
        } else if (!data.aggregates().isEmpty()) {
-     	  p = new AggregatePlan(tx, p, data.aggregates());
+     	  currentplan = new AggregatePlan(tx, currentplan, data.aggregates());
        }
       
       // Step 7.  Order by the given field names in the given direction, if any

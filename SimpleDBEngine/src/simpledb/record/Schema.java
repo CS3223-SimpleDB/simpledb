@@ -57,6 +57,7 @@ public class Schema {
     * @param sch the other schema
     */
    public void add(String fldname, Schema sch) {
+	  System.out.println(fldname);
       int type   = sch.type(fldname);
       int length = sch.length(fldname);
       addField(fldname, type, length);

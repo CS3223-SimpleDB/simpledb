@@ -71,8 +71,8 @@ class TablePlanner {
       }
       ArrayList<Plan> plans = new ArrayList<>();
       //plans.add(makeIndexJoin(current, currsch));
-      plans.add(makeSortJoin(current, currsch));
-      //plans.add(makeNestedJoin(current, currsch));
+      //plans.add(makeSortJoin(current, currsch));
+      plans.add(makeNestedJoin(current, currsch));
      // plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
@@ -208,7 +208,7 @@ class TablePlanner {
       for (String fldname : myschema.fields()) {
          String commonfield = mypred.equatesWithField(fldname);
          if (commonfield != null && currsch.hasField(commonfield)) {
-            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield);
+            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield, fldname);
             p = addSelectPred(p);
             return addJoinPred(p, currsch);
          }

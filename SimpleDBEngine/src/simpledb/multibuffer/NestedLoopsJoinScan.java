@@ -9,7 +9,8 @@ import simpledb.query.Scan;
  */
 public class NestedLoopsJoinScan implements Scan {
    private Scan lhs, rhs;
-   private String commonfield;
+   private String lhsfield, rhsfield;
+   private boolean isContinue = false;
 
    /**
     * Create a nested loop join scan having the two underlying scans.
@@ -17,10 +18,11 @@ public class NestedLoopsJoinScan implements Scan {
     * @param s2 the RHS scan
     * @param commonfield the common joining field between both scans
     */
-   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String commonfield) {
+   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String lhsfield, String rhsfield) {
       this.lhs = lhs;
       this.rhs = rhs;
-      this.commonfield = commonfield;
+      this.lhsfield = lhsfield;
+      this.rhsfield = rhsfield;
       beforeFirst();
    }
 
@@ -43,9 +45,20 @@ public class NestedLoopsJoinScan implements Scan {
     * @return a boolean indicating the success of a match
     */
    public boolean next() {
+	  if (isContinue) {
+		  while(rhs.next()) {
+	            if (lhs.getVal(lhsfield).equals(rhs.getVal(rhsfield))) {
+	                return true;
+	            }
+		  }
+		  isContinue = false;
+		  rhs.beforeFirst();
+	  }
+	  
       while (lhs.next()) {
          while (rhs.next()) {
-            if (lhs.getVal(commonfield).equals(rhs.getVal(commonfield))) {
+            if (lhs.getVal(lhsfield).equals(rhs.getVal(rhsfield))) {
+               isContinue = true;
                return true;
             }
          }
