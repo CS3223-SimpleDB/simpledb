@@ -71,9 +71,9 @@ class TablePlanner {
       }
       ArrayList<Plan> plans = new ArrayList<>();
       //plans.add(makeIndexJoin(current, currsch));
-      //plans.add(makeSortJoin(current, currsch));
+      plans.add(makeSortJoin(current, currsch));
       //plans.add(makeNestedJoin(current, currsch));
-      plans.add(makeHashJoin(current, currsch));
+     // plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
          return makeProductJoin(current, currsch);
@@ -178,7 +178,7 @@ class TablePlanner {
    private Plan makeHashJoin(Plan current, Schema currsch) {
 	   for (String fldname : myschema.fields()) {
 		   // if the condition has a field = field condition
-		   String leftfield = mypred.equatesWithField(fldname);
+		   String leftfield = mypred.equatesWithFieldPlannerChecks(fldname);
 		   if (leftfield != null && currsch.hasField(leftfield)) {
 			   /* comment out this check for v1 of hash join, assuming no need recursive partition
 		   	   if (tx.availableBuffs() < myplan.recordsOutput()) {

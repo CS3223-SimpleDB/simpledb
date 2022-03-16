@@ -47,8 +47,9 @@ public class SortPlan implements Plan {
       Scan src = p.open();
       List<TempTable> runs = splitIntoRuns(src);
       src.close();
-      while (runs.size() > 2)
+      while (runs.size() > 1)
          runs = doAMergeIteration(runs);
+      System.out.println("end runs");
       return new SortScan(runs, comp);
    }
    
@@ -105,34 +106,23 @@ public class SortPlan implements Plan {
       UpdateScan currentscan = currenttemp.open();
       while (copy(src, currentscan)) {
     	  List<String> resultList;
-    	  
     	  // if directions are present, sort plan is used for order by clause
-    	  if (comp.isDirectionsPresent()) {
     		  resultList = comp.compareSort(src, currentscan);
               if (!resultList.isEmpty()) {
             	  String direction = resultList.get(0);
             	  int resultVal = Integer.parseInt(resultList.get(1));
             	  if((direction.equals("asc") && (resultVal < 0)) ||
-            			  (direction.equals("desc") && (resultVal > 0))) {
+            			  (direction.equals("desc") && (resultVal > 0)) ||
+            			  (direction.equals("random") && (resultVal < 0))) {
+            		  System.out.println("creating new runs");
             		  currentscan.close();
                       currenttemp = new TempTable(tx, sch);
                       temps.add(currenttemp);
                       currentscan = (UpdateScan) currenttemp.open();
             	  }
               } 
-    	  } else {
-    		  // else sort plan is used for merge sort join, or those without order
-    		  System.out.println("i am no direction");
-    		  if (comp.compare(src, currentscan) < 0) {
-    		         // start a new run
-    		         currentscan.close();
-    		         currenttemp = new TempTable(tx, sch);
-    		         temps.add(currenttemp);
-    		         currentscan = (UpdateScan) currenttemp.open();
-    		  }
-    	  }  
       }
-
+      System.out.println("out of while");
       currentscan.close();
       return temps;
    }
@@ -143,9 +133,14 @@ public class SortPlan implements Plan {
          TempTable p1 = runs.remove(0);
          TempTable p2 = runs.remove(0);
          result.add(mergeTwoRuns(p1, p2));
+         System.out.println("merging");
       }
-      if (runs.size() == 1)
-         result.add(runs.get(0));
+      if (runs.size() == 1) {
+          result.add(runs.get(0));
+          System.out.println("1 run");
+      }
+      
+      System.out.println("not any condition");
       return result;
    }
    
@@ -158,27 +153,25 @@ public class SortPlan implements Plan {
       boolean hasmore1 = src1.next();
       boolean hasmore2 = src2.next();
       while (hasmore1 && hasmore2) {
-    	  if (comp.isDirectionsPresent()) {
         	  List<String> resultList = comp.compareSort(src1, src2);
               if (!resultList.isEmpty()) {
             	  String direction = resultList.get(0);
             	  int resultVal = Integer.parseInt(resultList.get(1));
-            	  
+            	  System.out.println(resultVal);
             	  if(direction.equals("asc") && (resultVal < 0)) {
             		  hasmore1 = copy(src1, dest);
             	  } else if (direction.equals("desc") && (resultVal > 0)) {
             		  hasmore1 = copy(src1, dest);
+            	  } else if (direction.equals("random") && (resultVal < 0)) {
+            		  System.out.println("random");
+            		  hasmore1 = copy(src1, dest);
             	  } else {
+            		  System.out.println("else");
             		  hasmore2 = copy(src2, dest);
             	  }
-              } 
-    	  } else {
-    		  if (comp.compare(src1, src2) < 0) {
-    			  hasmore1 = copy(src1, dest);
-    		  } else {
- 		         hasmore2 = copy(src2, dest);    			  
-    		  }
-    	  }
+              } else {
+            	  hasmore2 = copy(src2, dest);
+              }
       }
 
       if (hasmore1)
