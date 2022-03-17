@@ -165,7 +165,7 @@ public class HashJoinPlan implements Plan {
 		   return true;
 	   }
 	   
-	   private boolean copy(Scan src, UpdateScan dest) {
+	   private boolean copy (Scan src, UpdateScan dest) {
 	       dest.insert();
 		   for (String fldname : lhsSchema.fields())
 		       dest.setVal(fldname, src.getVal(fldname));
@@ -175,30 +175,28 @@ public class HashJoinPlan implements Plan {
 	   /**
 	    * Returns an estimate of the number of block accesses
 	    * required to execute the query. The formula is:
-	    * <pre> B(product(p1,p2)) = B(p2) + B(p1)*C(p2) </pre>
+	    * <pre> B(join(p1,p2)) = B(p1) + V(per partition)*R(p2) </pre>
 	    * where C(p2) is the number of blocks of p2.
-	    * The method uses the current number of available buffers
-	    * to calculate C(p2), and so this value may differ
-	    * when the query scan is opened.
 	    * @see simpledb.plan.Plan#blocksAccessed()
 	    */
 	   public int blocksAccessed() {
-	      // this guesses at the # of blocks
-	      int avail = tx.availableBuffs(); //number of buffers
-	      int size = new MaterializePlan(tx, rhs).blocksAccessed(); //number of accesses (IOs)
-	      int numOfBlocks = size / avail; //number of blocks
-	      return rhs.blocksAccessed() +
-	            (lhs.blocksAccessed() * numOfBlocks); //cost (IOs)
+		  // cost: lhs block accessed once during partitioning phase. During matching phase,
+		  // each tuple will scan through all blocks in lhs partition
+		  int availableBuffer = tx.availableBuffs();
+		  int numTuplesEachPartition = Math.round(lhs.recordsOutput() / availableBuffer);
+	      return lhs.blocksAccessed() +
+	            (numTuplesEachPartition * rhs.recordsOutput()); //cost (IOs)
 	   }
 
 	   /**
 	    * Estimates the number of output records in the product.
 	    * The formula is:
-	    * <pre> R(product(p1,p2)) = R(p1)*R(p2) </pre>
+	    * <pre> R(join(p1,p2)) = R(p1)*R(p2)/max{V(p1,F1),V(p2,F2)}</pre>
 	    * @see simpledb.plan.Plan#recordsOutput()
 	    */
 	   public int recordsOutput() {
-	      return lhs.recordsOutput() * rhs.recordsOutput();
+		      int maxvals = Math.max(lhs.distinctValues(joinFieldLhs), rhs.distinctValues(joinFieldRhs));
+		      return (lhs.recordsOutput() * rhs.recordsOutput()) / maxvals;
 	   }
 
 	   /**

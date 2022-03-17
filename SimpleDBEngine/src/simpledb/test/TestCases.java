@@ -32,9 +32,6 @@ public class TestCases {
    public static final String grp1 = "select sid, sname, gradyear, majorid from student group by gradyear";
    public static final String grp2 = "select gradyear from student group by gradyear";
    public static final String grpagg1 = "select count(sid), sname, gradyear, majorid from student group by gradyear";
-
-   //public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
-	public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid order by gradyear desc, sid";
    
    public static void main(String[] args) {		
       try {
