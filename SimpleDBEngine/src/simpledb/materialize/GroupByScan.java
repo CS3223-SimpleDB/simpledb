@@ -14,7 +14,6 @@ public class GroupByScan implements Scan {
    private List<AggregationFn> aggfns;
    private GroupValue groupval;
    private boolean moregroups;
-   private List<String> allfields;
    
    /**
     * Create a groupby scan, given a grouped table scan.
@@ -22,23 +21,10 @@ public class GroupByScan implements Scan {
     * @param groupfields the group fields
     * @param aggfns the aggregation functions
     */
-   public GroupByScan(Scan s, List<String> groupfields, List<AggregationFn> aggfns, List<String> allfields) {
+   public GroupByScan(Scan s, List<String> groupfields, List<AggregationFn> aggfns) {
       this.s = s;
       this.groupfields = groupfields;
       this.aggfns = aggfns;
-      this.allfields = allfields;
-      String afields = "ALL FIELDS: ";
-      for (String field : allfields) {
-         field += " ";
-         afields += field;
-      }
-      System.out.println(afields);
-      String gfields = "GROUP FIELDS: ";
-      for (String field : groupfields) {
-         field += " ";
-         gfields += field;
-      }
-      System.out.println(gfields);
       beforeFirst();
    }
    
@@ -99,7 +85,6 @@ public class GroupByScan implements Scan {
     * @see simpledb.query.Scan#getVal(java.lang.String)
     */
    public Constant getVal(String fldname) {
-      System.out.println("FIELD: " + fldname);
       if (groupfields.contains(fldname)) {
          return groupval.getVal(fldname);
       }
@@ -108,16 +93,6 @@ public class GroupByScan implements Scan {
             return fn.value();
          }
       }
-      /**
-      if (allfields.contains(fldname)) {
-         Constant temporaryConstant = s.getVal(fldname);
-         if (temporaryConstant.asString() == null) {
-            System.out.println(temporaryConstant.asString());
-         } else {
-            System.out.println(temporaryConstant.asInt());
-         }
-      }
-      **/
       throw new RuntimeException("field " + fldname + " not found.");
    }
    
