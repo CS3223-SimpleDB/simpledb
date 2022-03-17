@@ -43,13 +43,11 @@ public class SortPlan implements Plan {
     * @see simpledb.plan.Plan#open()
     */
    public Scan open() {
-	  System.out.println("sort plan cheapest");
       Scan src = p.open();
       List<TempTable> runs = splitIntoRuns(src);
       src.close();
       while (runs.size() > 1)
          runs = doAMergeIteration(runs);
-      System.out.println("end runs");
       return new SortScan(runs, comp);
    }
    
@@ -114,7 +112,6 @@ public class SortPlan implements Plan {
             	  if((direction.equals("asc") && (resultVal < 0)) ||
             			  (direction.equals("desc") && (resultVal > 0)) ||
             			  (direction.equals("random") && (resultVal < 0))) {
-            		  System.out.println("creating new runs");
             		  currentscan.close();
                       currenttemp = new TempTable(tx, sch);
                       temps.add(currenttemp);
@@ -122,7 +119,6 @@ public class SortPlan implements Plan {
             	  }
               } 
       }
-      System.out.println("out of while");
       currentscan.close();
       return temps;
    }
@@ -133,14 +129,11 @@ public class SortPlan implements Plan {
          TempTable p1 = runs.remove(0);
          TempTable p2 = runs.remove(0);
          result.add(mergeTwoRuns(p1, p2));
-         System.out.println("merging");
       }
       if (runs.size() == 1) {
           result.add(runs.get(0));
-          System.out.println("1 run");
       }
       
-      System.out.println("not any condition");
       return result;
    }
    
@@ -157,16 +150,13 @@ public class SortPlan implements Plan {
               if (!resultList.isEmpty()) {
             	  String direction = resultList.get(0);
             	  int resultVal = Integer.parseInt(resultList.get(1));
-            	  System.out.println(resultVal);
             	  if(direction.equals("asc") && (resultVal < 0)) {
             		  hasmore1 = copy(src1, dest);
             	  } else if (direction.equals("desc") && (resultVal > 0)) {
             		  hasmore1 = copy(src1, dest);
             	  } else if (direction.equals("random") && (resultVal < 0)) {
-            		  System.out.println("random");
             		  hasmore1 = copy(src1, dest);
             	  } else {
-            		  System.out.println("else");
             		  hasmore2 = copy(src2, dest);
             	  }
               } else {

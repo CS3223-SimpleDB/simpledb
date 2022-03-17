@@ -45,7 +45,6 @@ public class HashJoinPlan implements Plan {
 	   }
 	   
 	   public Scan open() {
-		   System.out.println("i am in hash join!!");
 		  // see whether lhs/rhs can handle the current buffer choose lhs/rhs to be partitioning table
 		  int availBuff = tx.availableBuffs();
 		  int hashTableSize = availBuff - 1;

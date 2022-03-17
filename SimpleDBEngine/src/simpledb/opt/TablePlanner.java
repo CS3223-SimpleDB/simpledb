@@ -77,7 +77,6 @@ class TablePlanner {
       plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
-    	 System.out.println("no cheapest");
          return makeProductJoin(current, currsch);
       }
       return cheapestPlan;
@@ -139,7 +138,6 @@ class TablePlanner {
          Constant val = mypred.equatesWithConstantPlannerChecks(fldname);
          if (val != null) {
             IndexInfo ii = indexes.get(fldname);
-            System.out.println("i am making index select");
             return new IndexSelectPlan(myplan, ii, val);
          }
       }
@@ -151,9 +149,6 @@ class TablePlanner {
     	 
          String outerfield = mypred.equatesWithFieldPlannerChecks(fldname);
          if (outerfield != null && currsch.hasField(outerfield)) {
-        	System.out.println("check which field matches");
-        	System.out.println(fldname);
-        	System.out.println(outerfield);
         	
             IndexInfo ii = indexes.get(fldname);
             Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
