@@ -120,7 +120,7 @@ public class Parser {
       } else {
          String noAggField = field();
          fields.add(noAggField);
-         aggregates.add(new NoneFn(noAggField));
+         //aggregates.add(new NoneFn(noAggField));
       }
       if (lex.matchDelim(',')) {
          lex.eatDelim(',');
