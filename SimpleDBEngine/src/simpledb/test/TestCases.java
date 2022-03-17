@@ -29,9 +29,12 @@ public class TestCases {
    public static final String agg5 = "select sum(sid), sname, gradyear, majorid from student";
    //public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
    public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
-   public static final String grp1 = "select sid, sname, gradyear, majorid from student group by gradyear";
-   public static final String grp2 = "select gradyear from student group by gradyear";
-   public static final String grpagg1 = "select count(sid), sname, gradyear, majorid from student group by gradyear";
+   public static final String grp1 = "select gradyear from student group by gradyear";
+   public static final String grp2 = "select count(sname), gradyear from student group by gradyear";
+   public static final String grp3 = "select min(gradyear), majorid from student group by majorid";
+   public static final String grp4 = "select max(gradyear), majorid from student group by majorid";
+   public static final String grp5 = "select sum(sid), majorid from student group by majorid";
+   public static final String grp6 = "select avg(sid), majorid from student group by majorid";
    
    public static void main(String[] args) {		
       try {
@@ -39,13 +42,13 @@ public class TestCases {
          Transaction tx  = db.newTx(); 
          Planner planner = db.planner();
          //QUERY
-         String qry = grpagg1;
+         String qry = select1;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
          //HEADER
-         //System.out.println("Sid\tName\tYear\tMajorID");
-         System.out.println("count\tName\tYear\tMajorID");
+         System.out.println("SID\tNAME\tGYEAR\tMAJORID");
+         //System.out.println("AVG\tMAJORID");
          
          //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop below
          /*s.next();
@@ -54,8 +57,8 @@ public class TestCases {
          
          while (s.next()) {
             //READ VALUES
-            int sid = s.getInt("countofsid");
-            //int sid = s.getInt("sid");
+            //int avgofsid = s.getInt("avgofsid");
+            int sid = s.getInt("sid");
             String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
             int majorid = s.getInt("majorid");
@@ -67,8 +70,9 @@ public class TestCases {
             //String title = s.getString("title");
             
             //PRINT VALUES
-            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
-            //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
+            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid);
+            //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title);
+            //System.out.println(avgofsid + "\t" + majorid);
          }
          
          s.close();
