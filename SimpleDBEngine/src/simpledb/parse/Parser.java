@@ -118,7 +118,9 @@ public class Parser {
          fields.add(fldname);
          aggregates.add(new MaxFn(fldname));
       } else {
-         fields.add(field());
+         String noAggField = field();
+         fields.add(noAggField);
+         aggregates.add(new NoneFn(noAggField));
       }
       if (lex.matchDelim(',')) {
          lex.eatDelim(',');
