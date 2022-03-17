@@ -22,6 +22,8 @@ public class TestCases {
 	public static final String sortingQuery3 = "select sid, sname, gradyear, majorid from student order by GradYear asc, MajorId desc";
 	public static final String sortingQuery4 = "select sid, sname, gradyear, majorid from student order by MajorId asc, GradYear desc";
 	
+	public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
+	
 	public static void main(String[] args) {		
 		try {
 	        SimpleDB db = new SimpleDB("studentdb");
@@ -29,19 +31,25 @@ public class TestCases {
 	        Planner planner = db.planner();
 	        
 	        // Input testcase String here
-	        String qry = sortingQuery4;
+	        String qry = nestedjoin;
 	        Plan p = planner.createQueryPlan(qry, tx);
 	        
 	        Scan s = p.open();
 	        
 	        System.out.println("Sid\tName\tYear\tMajorID");
 	        while (s.next()) {
-	        	int sid = s.getInt("sid");
-	        	String sname = s.getString("sname");
-	        	int gradyear = s.getInt("gradyear");
-	        	int majorid = s.getInt("majorid");
+	        	//int sid = s.getInt("sid");
+	        	//String sname = s.getString("sname");
+	        	//int gradyear = s.getInt("gradyear");
+	        	//int majorid = s.getInt("majorid");
+	        	//int majorid = s.getInt("did");
+	        	
+	        	String dname = s.getString("dname");
+	        	int did = s.getInt("did");
+	        	int cid = s.getInt("cid");
+	        	String title = s.getString("title");
 	           
-	        	System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid);
+	        	System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
 	        }
 	        s.close();
 	        tx.commit();

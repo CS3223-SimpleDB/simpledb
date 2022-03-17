@@ -136,6 +136,15 @@ public class Term {
          return null;
    }
    
+   public String equatesWithFieldDirection(String fldname) {
+	      if (lhs.isFieldName() &&
+	          lhs.asFieldName().equals(fldname) &&
+	          rhs.isFieldName())
+	         return rhs.asFieldName();
+	      else
+	         return null;
+	   }
+   
    /**
     * Return true if both of the term's expressions
     * apply to the specified schema.
@@ -152,5 +161,9 @@ public class Term {
    
    public boolean isInequality() {
 	   return !oprType.equals("=");
+   }
+   
+   public String getOpr() {
+	   return oprType;
    }
 }

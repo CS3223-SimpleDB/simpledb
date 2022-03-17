@@ -1,6 +1,7 @@
 package simpledb.opt;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import simpledb.tx.Transaction;
 import simpledb.record.*;
@@ -206,11 +207,16 @@ class TablePlanner {
     */
    private Plan makeNestedJoin(Plan current, Schema currsch) {
       for (String fldname : myschema.fields()) {
-         String commonfield = mypred.equatesWithField(fldname);
-         if (commonfield != null && currsch.hasField(commonfield)) {
-            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield, fldname);
-            p = addSelectPred(p);
-            return addJoinPred(p, currsch);
+    	 List<String> result = mypred.equatesWithFieldInequality(fldname);
+    	 
+         if (result != null) {
+        	 String commonfield = result.get(0);
+        	 if (currsch.hasField(commonfield)) {
+        		 String oprType = result.get(1);
+                 Plan p = new BlockJoinPlan(tx, myplan, current, fldname, commonfield, oprType);
+                 p = addSelectPred(p);
+                 return addJoinPred(p, currsch);
+        	 }
          }
       }
       return null;

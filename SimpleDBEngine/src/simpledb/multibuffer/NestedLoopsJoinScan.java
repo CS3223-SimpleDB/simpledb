@@ -9,7 +9,7 @@ import simpledb.query.Scan;
  */
 public class NestedLoopsJoinScan implements Scan {
    private Scan lhs, rhs;
-   private String lhsfield, rhsfield;
+   private String lhsfield, rhsfield, oprType;
    private boolean isContinue = false;
 
    /**
@@ -18,11 +18,12 @@ public class NestedLoopsJoinScan implements Scan {
     * @param s2 the RHS scan
     * @param commonfield the common joining field between both scans
     */
-   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String lhsfield, String rhsfield) {
+   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String lhsfield, String rhsfield, String oprType) {
       this.lhs = lhs;
       this.rhs = rhs;
       this.lhsfield = lhsfield;
       this.rhsfield = rhsfield;
+      this.oprType = oprType;
       beforeFirst();
    }
 
@@ -47,7 +48,8 @@ public class NestedLoopsJoinScan implements Scan {
    public boolean next() {
 	  if (isContinue) {
 		  while(rhs.next()) {
-	            if (lhs.getVal(lhsfield).equals(rhs.getVal(rhsfield))) {
+			    boolean isMatch = processRecords();
+	            if (isMatch) {
 	                return true;
 	            }
 		  }
@@ -57,7 +59,8 @@ public class NestedLoopsJoinScan implements Scan {
 	  
       while (lhs.next()) {
          while (rhs.next()) {
-            if (lhs.getVal(lhsfield).equals(rhs.getVal(rhsfield))) {
+        	 boolean isMatch = processRecords();
+            if (isMatch) {
                isContinue = true;
                return true;
             }
@@ -65,6 +68,24 @@ public class NestedLoopsJoinScan implements Scan {
          rhs.beforeFirst();
       }
       return false;
+   }
+   
+   private boolean processRecords() {
+	   Constant lhsVal = lhs.getVal(lhsfield);
+	   Constant rhsVal = rhs.getVal(rhsfield);
+	   if (oprType.equals("<")) {
+	       return lhsVal.compareTo(rhsVal) < 0;
+	   } else if (oprType.equals("<=")) {
+	       return lhsVal.compareTo(rhsVal) <= 0; 
+	   } else if (oprType.equals(">")) {
+	       return lhsVal.compareTo(rhsVal) > 0;
+	   } else if (oprType.equals(">=")) {
+	       return lhsVal.compareTo(rhsVal) >= 0;
+	   } else if (oprType.equals("!=") || oprType.equals("<>")) {
+	       return !(lhsVal.equals(rhsVal));
+	   } else {
+	       return lhsVal.equals(rhsVal);
+	   }
    }
 
    /** 

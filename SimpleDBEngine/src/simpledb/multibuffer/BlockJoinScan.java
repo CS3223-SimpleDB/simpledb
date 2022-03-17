@@ -11,7 +11,7 @@ import simpledb.tx.Transaction;
 public class BlockJoinScan implements Scan {
    private Transaction tx;
    private Scan leftScan, rightScan=null, nestedLoopScan;
-   private String rightFilename, lhsfield, rhsfield;
+   private String rightFilename, lhsfield, rhsfield, oprType;
    private Layout rightLayout;
    private int blockSize, nextBlockNumber, rightFilesize;
    
@@ -25,13 +25,14 @@ public class BlockJoinScan implements Scan {
     * @param commonfield the common joining field between both plans
     */
    public BlockJoinScan(Transaction tx, Scan leftScan, String rightTableName,
-		   Layout rightTableLayout, String lhsfield, String rhsfield) {
+		   Layout rightTableLayout, String lhsfield, String rhsfield, String oprType) {
       this.tx = tx;
       this.leftScan = leftScan;
       this.rightFilename = rightTableName + ".tbl";
       this.rightLayout = rightTableLayout;
       this.lhsfield = lhsfield;
       this.rhsfield = rhsfield;
+      this.oprType = oprType;
       rightFilesize = tx.size(rightFilename);
       int available = tx.availableBuffs();
       blockSize = BufferNeeds.bestFactor(available, rightFilesize);
@@ -124,7 +125,7 @@ public class BlockJoinScan implements Scan {
          end = rightFilesize - 1;
       rightScan = new BlockScan(tx, rightFilename, rightLayout, nextBlockNumber, end);
       leftScan.beforeFirst();
-      nestedLoopScan = new NestedLoopsJoinScan(leftScan, rightScan, lhsfield, rhsfield);
+      nestedLoopScan = new NestedLoopsJoinScan(leftScan, rightScan, lhsfield, rhsfield, oprType);
       nextBlockNumber = end + 1;
       return true;
    }
