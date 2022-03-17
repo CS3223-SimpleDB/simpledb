@@ -18,10 +18,14 @@ public class TestCases {
     public static final String order2 = "select sid, sname, gradyear, majorid from student order by gradyear asc";
     public static final String order3 = "select sid, sname, gradyear, majorid from student order by gradyear desc";
     public static final String order4 = "select sid, sname, gradyear, majorid from student order by gradyear, majorid";
-    public static final String sort5 = "select sid, sname, gradyear, majorid from student order by gradyear, majorid desc";
+    public static final String order5 = "select sid, sname, gradyear, majorid from student order by gradyear, majorid desc";
     public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
     public static final String distinct2 = "select distinct gradyear, majorid from student";
-    public static final String agg1 = "select sid, sname, gradyear, avg(majorid) from student";
+    public static final String agg1 = "select sid, sname, avg(gradyear), majorid from student";
+    public static final String agg2 = "select sid, count(sname), gradyear, majorid from student";
+    public static final String agg3 = "select sid, sname, max(gradyear), majorid from student";
+    public static final String agg4 = "select sid, sname, min(gradyear), majorid from student";
+    public static final String agg5 = "select sum(sid), sname, gradyear, majorid from student";
 	 //public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
 	 public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
 	 public static final String grp1 = "select sid, sname, gradyear, majorid from student group by sid";
@@ -40,7 +44,7 @@ public class TestCases {
 	         //HEADER
 	         System.out.println("Sid\tName\tYear\tMajorID");
 	         
-	         //AGGREGATE
+	         //AGGREGATE (avgof, countof, maxof, minof, sumof)
 	         /*
 	         s.next();
 	         int agg = s.getInt("avgofmajorid");
