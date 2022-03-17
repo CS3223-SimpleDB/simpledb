@@ -32,14 +32,13 @@ public class TestCases {
 	         SimpleDB db = new SimpleDB("studentdb");
 	         Transaction tx  = db.newTx();
 	         Planner planner = db.planner();
-	         
 	         //QUERY
-	         String qry = nestedjoin;
+	         String qry = select1;
 	         
 	         Plan p = planner.createQueryPlan(qry, tx);
 	         Scan s = p.open();
 	         //HEADER
-	         //System.out.println("Sid\tName\tYear\tMajorID");
+	         System.out.println("Sid\tName\tYear\tMajorID");
 	         
 	         //AGGREGATE
 	         /*
@@ -53,8 +52,8 @@ public class TestCases {
 	        	    int sid = s.getInt("sid");
 	        	    String sname = s.getString("sname");
 	        	    int gradyear = s.getInt("gradyear");
-	        	    //int majorid = s.getInt("majorid");
-	        	    String majorid = s.getString("dname");
+	        	    int majorid = s.getInt("majorid");
+	        	    //String majorid = s.getString("dname");
 	        	    //int majorid = s.getInt("did");
 	        	    /*
 	        	    String dname = s.getString("dname");
