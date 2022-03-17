@@ -23,7 +23,7 @@ public class TestCases {
 	public static final String sortingQuery4 = "select sid, sname, gradyear, majorid from student order by MajorId asc, GradYear desc";
 	
 	//public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
-	public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
+	public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid order by gradyear desc, sid";
 	
 	public static void main(String[] args) {		
 		try {

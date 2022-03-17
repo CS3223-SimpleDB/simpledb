@@ -1,6 +1,7 @@
 package simpledb.multibuffer;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import simpledb.materialize.MaterializePlan;
@@ -64,6 +65,16 @@ public class HashJoinPlan implements Plan {
 	   private HashMap<Integer, HashPartition> buildHashTable(HashMap<Integer,
 			   HashPartition> hashTable,int hashTableSize) {
 		   
+		   // Each partition, 1 hash map, to store the corresponding field -> values
+		   List<HashMap<String, List<Constant>>> finalResult =
+				   new LinkedList<HashMap<String, List<Constant>>>();
+		   
+		   for (int i = 0; i < hashTableSize; i++) {
+			   finalResult.add(new HashMap<String, List<Constant>>());
+		   }
+		   
+		   int numOfFields = lhsSchema.fields().size();
+		   
 		   // Step 1: Open LHS scan
 		   Scan leftScan = lhs.open();
 		   leftScan.beforeFirst();
@@ -73,7 +84,28 @@ public class HashJoinPlan implements Plan {
 			   Constant val = leftScan.getVal(joinFieldLhs);
 			   int hashCodeVal = val.hashCode();
 			   int modVal = hashCodeVal % hashTableSize;
+			   HashMap<String, List<Constant>> partitionMap = finalResult.get(modVal);
 			   
+			   if (partitionMap.get(lhsSchema.fields().get(0)) != null) {
+				   // some elements are inserted into partition already
+				   for (String fldname : lhsSchema.fields()) {
+					   Constant fieldVal = leftScan.getVal(fldname);
+					   List<Constant> fieldResults = partitionMap.get(fldname);
+					   fieldResults.add(fieldVal);
+				   }
+				   leftScanHasRecord = leftScan.next();
+			   } else {
+				   // first insertion into this partition;
+				   for (String fldname : lhsSchema.fields()) {
+					   Constant fieldVal = leftScan.getVal(fldname);
+					   List<Constant> fieldResults = new LinkedList<Constant>();
+					   fieldResults.add(fieldVal);
+					   partitionMap.put(fldname, fieldResults);
+				   }
+				   leftScanHasRecord = leftScan.next();
+			   }
+			   
+			   /*
 			   // Step 3: insert into partition
 			   if (hashTable.get(modVal) != null) {
 				   // partition already created
@@ -94,12 +126,43 @@ public class HashJoinPlan implements Plan {
 				   
 				   //Step 6: Update hash table
 				   hashTable.put(modVal, newPartition);
-			   }
+			   }*/
 			   
 		   }
+		   
+		   // Step 7: write all partitions to disc:
+		   copy(finalResult, hashTable);
+		   
 		   // Last Step: Close scan
 		   leftScan.close();
 		   return hashTable;
+	   }
+	   
+	   private boolean copy(List<HashMap<String, List<Constant>>> results,
+			   HashMap<Integer, HashPartition>  hashTable) {
+		   
+		   int counter = 0;
+		   for (HashMap<String, List<Constant>> partition : results) {
+			   if (partition.get(lhsSchema.fields().get(0)) != null) {
+				   // partition exists, start to copy
+				   HashPartition newPartition = new HashPartition(tx, lhsSchema);
+				   UpdateScan partitionScan = newPartition.open();
+				   
+				   int valuesToAdd = partition.get(lhsSchema.fields().get(0)).size();
+				   for (int i = 0; i < valuesToAdd; i++) {
+					   partitionScan.insert();
+					   for (String fldname : lhsSchema.fields()) {
+						   Constant val = partition.get(fldname).get(i);
+						   partitionScan.setVal(fldname, val);
+					   }
+				   }
+				   
+				   partitionScan.close();
+				   hashTable.put(counter, newPartition);
+			   }
+			   counter++;
+		   }
+		   return true;
 	   }
 	   
 	   private boolean copy(Scan src, UpdateScan dest) {
