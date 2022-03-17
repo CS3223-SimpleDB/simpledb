@@ -49,19 +49,16 @@ public class HeuristicQueryPlanner implements QueryPlanner {
             currentplan = getLowestProductPlan(currentplan);
       }
       
-      System.out.println("checking buffers");
-      System.out.println(tx.availableBuffs());
-      
       // Step 5.  Project on the field names
       Plan p = new ProjectPlan(currentplan, data.fields());
       
       // Step 6.  Group by the given field names, if any
       //          Else aggregate the given field names, if any
       if (!data.groupByAttributes().isEmpty()) {
-          currentplan = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates());
-       } else if (!data.aggregates().isEmpty()) {
-     	  currentplan = new AggregatePlan(tx, currentplan, data.aggregates());
-       }
+         p = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates());
+      } else if (!data.aggregates().isEmpty()) {
+         p = new AggregatePlan(tx, currentplan, data.aggregates());
+      }
       
       // Step 7.  Order by the given field names in the given direction, if any
       if (!data.orderByAttributes().isEmpty()) {

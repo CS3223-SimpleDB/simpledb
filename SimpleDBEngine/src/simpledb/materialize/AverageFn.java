@@ -49,7 +49,7 @@ public class AverageFn implements AggregationFn {
     * @see simpledb.materialize.AggregationFn#fieldName()
     */
    public String fieldName() {
-      return "averageof" + fldname;
+      return "avgof" + fldname;
    }
 
    /**
