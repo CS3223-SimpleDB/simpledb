@@ -15,6 +15,7 @@ public class GroupByPlan implements Plan {
    private List<String> groupfields;
    private List<AggregationFn> aggfns;
    private Schema sch = new Schema();
+   private List<String> allfields;
    
    /**
     * Create a groupby plan for the underlying query.
@@ -27,10 +28,11 @@ public class GroupByPlan implements Plan {
     * @param aggfns the aggregation functions
     * @param tx the calling transaction
     */
-   public GroupByPlan(Transaction tx, Plan p, List<String> groupfields, List<AggregationFn> aggfns) {
+   public GroupByPlan(Transaction tx, Plan p, List<String> groupfields, List<AggregationFn> aggfns, List<String> allfields) {
       this.p = new SortPlan(tx, p, groupfields);
       this.groupfields = groupfields;
       this.aggfns = aggfns;
+      this.allfields = allfields;
       for (String fldname : groupfields)
          sch.add(fldname, p.schema());
       for (AggregationFn fn : aggfns)
@@ -45,7 +47,7 @@ public class GroupByPlan implements Plan {
     */
    public Scan open() {
       Scan s = p.open();
-      return new GroupByScan(s, groupfields, aggfns);
+      return new GroupByScan(s, groupfields, aggfns, allfields);
    }
    
    /**
