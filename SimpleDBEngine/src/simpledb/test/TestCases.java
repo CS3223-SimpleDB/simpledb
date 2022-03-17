@@ -29,27 +29,23 @@ public class TestCases {
    public static final String agg5 = "select sum(sid), sname, gradyear, majorid from student";
    //public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
    public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
-   public static final String grp1 = "select sid, sname, gradyear, majorid from student group by sid";
+   public static final String grp1 = "select sid, sname, gradyear, majorid from student group by gradyear";
    public static final String grp2 = "select gradyear from student group by gradyear";
+   public static final String grpagg1 = "select count(sid), sname, gradyear, majorid from student group by gradyear";
    
    public static void main(String[] args) {		
       try {
          SimpleDB db = new SimpleDB("studentdb");
-         Transaction tx  = db.newTx();
+         Transaction tx  = db.newTx(); 
          Planner planner = db.planner();
          //QUERY
-         String qry = agg5;
+         String qry = grpagg1;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
          //HEADER
          //System.out.println("Sid\tName\tYear\tMajorID");
-         System.out.println("sumofsid");
-         
-         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop below
-         s.next();
-         int agg = s.getInt("sumofsid");
-         System.out.println(agg);
+         System.out.println("count\tName\tYear\tMajorID");
          
          /*while (s.next()) {
             //READ VALUES
@@ -65,9 +61,27 @@ public class TestCases {
             //String title = s.getString("title");
             
             //PRINT VALUES
-            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
+            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
          }*/
+         
+         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop above
+         /*s.next();
+         int agg = s.getInt("sumofsid");
+         System.out.println(agg);*/
+         
+         //GROUP BY *uncomment this block, comment out while loop above
+         while (s.next()) {
+            //READ VALUES
+            int sid = s.getInt("countofsid");
+            String sname = s.getString("sname");
+            int gradyear = s.getInt("gradyear");
+            int majorid = s.getInt("majorid");
+            
+            //PRINT VALUES
+            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
+            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
+         }
          s.close();
          tx.commit();
       } catch(Exception e) {
