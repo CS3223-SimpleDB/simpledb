@@ -39,7 +39,7 @@ public class SelectScan implements UpdateScan {
 	}
 
 	public int getInt(String fldname) {
-		return s.getInt(fldname);
+	   return s.getInt(fldname);
 	}
 
 	public String getString(String fldname) {

@@ -28,12 +28,21 @@ public class SortScan implements Scan {
     */
    public SortScan(List<TempTable> runs, RecordComparator comp) {
       this.comp = comp;
-      s1 = (UpdateScan) runs.get(0).open();
-      hasmore1 = s1.next();
-      if (runs.size() > 1) {
-         s2 = (UpdateScan) runs.get(1).open();
-         hasmore2 = s2.next();
+      if (runs.size() != 0) {
+          s1 = (UpdateScan) runs.get(0).open();
+          hasmore1 = s1.next();
+          if (runs.size() > 1) {
+             s2 = (UpdateScan) runs.get(1).open();
+             hasmore2 = s2.next();
+          }
+      } else {
+    	  s1 = null;
+    	  s2 = null;
+    	  hasmore1 = false;
+    	  hasmore2 = false;
       }
+
+
    }
    
    /**
@@ -44,9 +53,12 @@ public class SortScan implements Scan {
     * @see simpledb.query.Scan#beforeFirst()
     */
    public void beforeFirst() {
-      currentscan = null;
-      s1.beforeFirst();
-      hasmore1 = s1.next();
+	  if (s1 != null) {
+	      currentscan = null;
+	      s1.beforeFirst();
+	      hasmore1 = s1.next();
+	  }
+
       if (s2 != null) {
          s2.beforeFirst();
          hasmore2 = s2.next();
@@ -100,7 +112,9 @@ public class SortScan implements Scan {
     * @see simpledb.query.Scan#close()
     */
    public void close() {
-      s1.close();
+	  if(s1 != null) {
+		  s1.close();
+	  }
       if (s2 != null)
          s2.close();
    }
@@ -159,5 +173,9 @@ public class SortScan implements Scan {
       s1.moveToRid(rid1);
       if (rid2 != null)
          s2.moveToRid(rid2);
+   }
+   
+   public boolean isEmpty() {
+	   return ((s1 == null) && (s2 == null));
    }
 }

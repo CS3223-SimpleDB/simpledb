@@ -22,7 +22,8 @@ public class TestCases {
 	public static final String sortingQuery3 = "select sid, sname, gradyear, majorid from student order by GradYear asc, MajorId desc";
 	public static final String sortingQuery4 = "select sid, sname, gradyear, majorid from student order by MajorId asc, GradYear desc";
 	
-	public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
+	//public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
+	public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
 	
 	public static void main(String[] args) {		
 		try {
@@ -38,18 +39,21 @@ public class TestCases {
 	        
 	        System.out.println("Sid\tName\tYear\tMajorID");
 	        while (s.next()) {
-	        	//int sid = s.getInt("sid");
-	        	//String sname = s.getString("sname");
-	        	//int gradyear = s.getInt("gradyear");
+	        	int sid = s.getInt("sid");
+	        	String sname = s.getString("sname");
+	        	int gradyear = s.getInt("gradyear");
 	        	//int majorid = s.getInt("majorid");
+	        	String majorid = s.getString("dname");
 	        	//int majorid = s.getInt("did");
 	        	
+	        	/*
 	        	String dname = s.getString("dname");
 	        	int did = s.getInt("did");
 	        	int cid = s.getInt("cid");
 	        	String title = s.getString("title");
-	           
-	        	System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
+	           */
+	        	//System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
+	        	System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
 	        }
 	        s.close();
 	        tx.commit();

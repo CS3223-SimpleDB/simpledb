@@ -72,11 +72,12 @@ class TablePlanner {
       }
       ArrayList<Plan> plans = new ArrayList<>();
       //plans.add(makeIndexJoin(current, currsch));
-      //plans.add(makeSortJoin(current, currsch));
-      plans.add(makeNestedJoin(current, currsch));
-     // plans.add(makeHashJoin(current, currsch));
+      plans.add(makeSortJoin(current, currsch));
+     //plans.add(makeNestedJoin(current, currsch));
+      //plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
+    	 System.out.println("no cheapest");
          return makeProductJoin(current, currsch);
       }
       return cheapestPlan;
