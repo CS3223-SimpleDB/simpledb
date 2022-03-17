@@ -58,10 +58,10 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       // Step 6.  Group by the given field names, if any
       //          Else aggregate the given field names, if any
       if (!data.groupByAttributes().isEmpty()) {
-          currentplan = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates(), data.fields());
-       } else if (!data.aggregates().isEmpty()) {
-     	  currentplan = new AggregatePlan(tx, currentplan, data.aggregates());
-       }
+         p = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates(), data.fields());
+      } else if (!data.aggregates().isEmpty()) {
+         p = new AggregatePlan(tx, currentplan, data.aggregates());
+      }
       
       // Step 7.  Order by the given field names in the given direction, if any
       if (!data.orderByAttributes().isEmpty()) {
