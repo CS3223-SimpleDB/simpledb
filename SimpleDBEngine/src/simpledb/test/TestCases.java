@@ -47,9 +47,15 @@ public class TestCases {
          //System.out.println("Sid\tName\tYear\tMajorID");
          System.out.println("count\tName\tYear\tMajorID");
          
-         /*while (s.next()) {
+         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop below
+         /*s.next();
+         int agg = s.getInt("sumofsid");
+         System.out.println(agg);*/
+         
+         while (s.next()) {
             //READ VALUES
-            int sid = s.getInt("sid");
+            int sid = s.getInt("countofsid");
+            //int sid = s.getInt("sid");
             String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
             int majorid = s.getInt("majorid");
@@ -63,25 +69,8 @@ public class TestCases {
             //PRINT VALUES
             System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
-         }*/
-         
-         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop above
-         /*s.next();
-         int agg = s.getInt("sumofsid");
-         System.out.println(agg);*/
-         
-         //GROUP BY *uncomment this block, comment out while loop above
-         while (s.next()) {
-            //READ VALUES
-            int sid = s.getInt("countofsid");
-            String sname = s.getString("sname");
-            int gradyear = s.getInt("gradyear");
-            int majorid = s.getInt("majorid");
-            
-            //PRINT VALUES
-            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
-            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
          }
+         
          s.close();
          tx.commit();
       } catch(Exception e) {
