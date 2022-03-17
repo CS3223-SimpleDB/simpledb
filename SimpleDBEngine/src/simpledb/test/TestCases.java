@@ -17,10 +17,11 @@ public class TestCases {
    public static final String order1 = "select sid, sname, gradyear, majorid from student order by gradyear";
    public static final String order2 = "select sid, sname, gradyear, majorid from student order by gradyear asc";
    public static final String order3 = "select sid, sname, gradyear, majorid from student order by gradyear desc";
-   public static final String order4 = "select sid, sname, gradyear, majorid from student order by gradyear, majorid";
-   public static final String order5 = "select sid, sname, gradyear, majorid from student order by gradyear, majorid desc";
+   public static final String order4 = "select sid, sname, gradyear, majorid from student order by gradyear, sid";
+   public static final String order5 = "select sid, sname, gradyear, majorid from student order by gradyear, sid desc";
    public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
-   public static final String distinct2 = "select distinct gradyear, majorid from student";
+   public static final String distinct2p1 = "select gradyear, majorid from student order by gradyear";
+   public static final String distinct2p2 = "select distinct gradyear, majorid from student";
    public static final String agg1 = "select sid, sname, avg(gradyear), majorid from student";
    public static final String agg2 = "select sid, count(sname), gradyear, majorid from student";
    public static final String agg3 = "select sid, sname, max(gradyear), majorid from student";
@@ -37,19 +38,20 @@ public class TestCases {
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
-         String qry = select1;
+         String qry = agg5;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
          //HEADER
-         System.out.println("Sid\tName\tYear\tMajorID");
+         //System.out.println("Sid\tName\tYear\tMajorID");
+         System.out.println("sumofsid");
          
-         //AGGREGATE (avgof, countof, maxof, minof, sumof)
-         //s.next();
-         //int agg = s.getInt("avgofmajorid");
-         //System.out.println(agg);
+         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop below
+         s.next();
+         int agg = s.getInt("sumofsid");
+         System.out.println(agg);
          
-         while (s.next()) {
+         /*while (s.next()) {
             //READ VALUES
             int sid = s.getInt("sid");
             String sname = s.getString("sname");
@@ -63,9 +65,9 @@ public class TestCases {
             //String title = s.getString("title");
             
             //PRINT VALUES
-            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
+            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid );
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title );
-         }
+         }*/
          s.close();
          tx.commit();
       } catch(Exception e) {
