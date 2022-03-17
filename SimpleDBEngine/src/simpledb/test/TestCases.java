@@ -22,11 +22,11 @@ public class TestCases {
    public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
    public static final String distinct2p1 = "select gradyear, majorid from student order by gradyear";
    public static final String distinct2p2 = "select distinct gradyear, majorid from student";
-   public static final String agg1 = "select sid, sname, avg(gradyear), majorid from student";
-   public static final String agg2 = "select sid, count(sname), gradyear, majorid from student";
-   public static final String agg3 = "select sid, sname, max(gradyear), majorid from student";
-   public static final String agg4 = "select sid, sname, min(gradyear), majorid from student";
-   public static final String agg5 = "select sum(sid), sname, gradyear, majorid from student";
+   public static final String agg1 = "select avg(gradyear) from student";
+   public static final String agg2 = "select count(sname) from student";
+   public static final String agg3 = "select max(gradyear) from student";
+   public static final String agg4 = "select min(gradyear) from student";
+   public static final String agg5 = "select sum(sid) from student";
    //public static final String nestedjoin = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
    public static final String nestedjoin = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
    public static final String grp1 = "select gradyear from student group by gradyear";
@@ -36,10 +36,10 @@ public class TestCases {
    public static final String grp5 = "select sum(sid), majorid from student group by majorid";
    public static final String grp6 = "select avg(sid), majorid from student group by majorid";
    
-   public static void main(String[] args) {		
+   public static void main(String[] args) {
       try {
          SimpleDB db = new SimpleDB("studentdb");
-         Transaction tx  = db.newTx(); 
+         Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
          String qry = select1;
@@ -50,10 +50,12 @@ public class TestCases {
          System.out.println("SID\tNAME\tGYEAR\tMAJORID");
          //System.out.println("AVG\tMAJORID");
          
-         //AGGREGATE (avgof, countof, maxof, minof, sumof) *uncomment this block, comment out while loop below
-         /*s.next();
+         //AGGREGATE (avgofgradyear / countofsname / maxofgradyear / minofgradyear / sumofsid) *uncomment this block and comment out while loop below
+         /*
+         s.next();
          int agg = s.getInt("sumofsid");
-         System.out.println(agg);*/
+         System.out.println(agg);
+         */
          
          while (s.next()) {
             //READ VALUES
