@@ -5,6 +5,7 @@ import simpledb.plan.Plan;
 import simpledb.plan.Planner;
 import simpledb.query.*;
 import simpledb.server.SimpleDB;
+import java.io.*;
 
 public class TestCases {
    public static final String select1 = "select sid, sname, gradyear, majorid from student";
@@ -38,6 +39,10 @@ public class TestCases {
    
    public static void main(String[] args) {		
       try {
+    	 
+    	 // Get starting timestamp of function runtime
+    	 long start = System.currentTimeMillis();
+    	  
          SimpleDB db = new SimpleDB("studentdb");
          Transaction tx  = db.newTx(); 
          Planner planner = db.planner();
@@ -77,6 +82,13 @@ public class TestCases {
          
          s.close();
          tx.commit();
+         
+         // Get ending timestamp of function runtime
+         long end = System.currentTimeMillis();
+         
+         // Print out total runtime of function
+         System.out.println("Total runtime takes " + (end - start) + "ms");
+         
       } catch(Exception e) {
           e.printStackTrace();    
       }   

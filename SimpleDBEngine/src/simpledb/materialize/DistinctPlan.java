@@ -73,5 +73,9 @@ public class DistinctPlan implements Plan {
    public Schema schema() {
       return schema;
    }
+   
+   public String toString() {
+	   return "distinct (" + p.toString() + ")";
+   }
 
 }

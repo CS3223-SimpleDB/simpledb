@@ -70,6 +70,9 @@ public class HeuristicQueryPlanner implements QueryPlanner {
          p = new DistinctPlan(tx, p, data.fields());
       }
       
+      // Display query plan
+      printQueryPlan(p.toString());
+      
       return p;
    }
    

@@ -226,5 +226,8 @@ public class HashJoinPlan implements Plan {
 	   public Schema schema() {
 		  return schema;
 	   }
-
+	   
+	   public String toString() {
+		   return "[" + lhs.toString() + " hash join " + rhs.toString() + "]";
+	   }
 }

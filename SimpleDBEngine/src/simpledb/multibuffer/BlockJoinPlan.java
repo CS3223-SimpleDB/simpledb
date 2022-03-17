@@ -118,4 +118,8 @@ public class BlockJoinPlan implements Plan {
       dest.close();
       return t;
    }
+   
+   public String toString() {
+	   return "[" + lhs.toString() + " nested loop join " + rhs.toString() + "]";
+   }
 }

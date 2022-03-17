@@ -78,5 +78,9 @@ public class AggregatePlan implements Plan {
    public Schema schema() {
       return schema;
    }
+   
+   public String toString() {
+	   return "aggregate (" + p.toString() + ")";
+   }
 
 }

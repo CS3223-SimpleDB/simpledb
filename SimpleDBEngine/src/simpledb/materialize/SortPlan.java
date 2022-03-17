@@ -182,4 +182,8 @@ public class SortPlan implements Plan {
          dest.setVal(fldname, src.getVal(fldname));
       return src.next();
    }
+   
+   public String toString() {
+	   return "sort (" + p.toString() + ")";
+   }
 }
