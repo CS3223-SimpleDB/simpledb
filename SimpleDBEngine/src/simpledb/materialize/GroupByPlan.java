@@ -15,6 +15,7 @@ public class GroupByPlan implements Plan {
    private List<String> groupfields;
    private List<AggregationFn> aggfns;
    private Schema sch = new Schema();
+   private boolean isAggOnly = false;
    
    /**
     * Create a groupby plan for the underlying query.
@@ -35,6 +36,9 @@ public class GroupByPlan implements Plan {
          sch.add(fldname, p.schema());
       for (AggregationFn fn : aggfns)
          sch.addIntField(fn.fieldName());
+      if (groupfields.isEmpty()) {
+         this.isAggOnly = true;
+      }
    }
    
    /**
@@ -100,6 +104,10 @@ public class GroupByPlan implements Plan {
    }
    
    public String toString() {
-	   return "groupby (" + p.toString() + ")";
+      if (isAggOnly) {
+         return "aggregate (" + p.toString() + ")";
+      } else {
+         return "groupby (" + p.toString() + ")";
+      }
    }
 }
