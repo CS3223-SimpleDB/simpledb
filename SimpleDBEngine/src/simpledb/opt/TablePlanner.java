@@ -55,6 +55,13 @@ class TablePlanner {
       return addSelectPred(p);
    }
    
+   public Plan makeSelectPlanExpt() {
+	      Plan p = makeIndexSelect();
+	      if (p == null)
+	         p = myplan;
+	      return addSelectPred(p);
+	}
+   
    /**
     * Constructs a join plan of the specified plan and the table.
     * The plan will use the join with the lowest block accesses.
@@ -73,8 +80,8 @@ class TablePlanner {
       ArrayList<Plan> plans = new ArrayList<>();
       //plans.add(makeIndexJoin(current, currsch));
       //plans.add(makeSortJoin(current, currsch));
-     //plans.add(makeNestedJoin(current, currsch));
-      plans.add(makeHashJoin(current, currsch));
+      plans.add(makeNestedJoin(current, currsch));
+      //plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
     	  System.out.println("no plan");
@@ -82,6 +89,40 @@ class TablePlanner {
       }
       return cheapestPlan;
    }
+   
+   public Plan makeJoinPlanExpt(Plan current) {
+	      Schema currsch = current.schema();
+	      Predicate joinpred = mypred.joinSubPred(myschema, currsch);
+	      if (joinpred == null) {
+	    	  return null;
+	      }
+	      String currentTable = myplan.toString();
+	      
+	      // first right deep
+	      if (currentTable.equals("dept")) {
+	    	  return makeNestedJoinExpt(current, currsch, "did", "majorid");
+	      }	else if (currentTable.equals("course")) {
+	    	  return makeNestedJoinExpt(current, currsch, "deptid", "did");
+	      } else if (currentTable.equals("section")) {
+	    	  return makeNestedJoinExpt(current, currsch, "courseid", "cid");
+	      } else {
+	    	  return makeNestedJoinExpt(current, currsch, "sectionid", "sectid");
+	      }
+	      
+	      // second right deep
+	      /*
+	      if (currentTable.equals("enroll")) {
+	    	  return makeNestedJoinExpt(current, currsch, "studentid", "sid");
+	      }	else if (currentTable.equals("section")) {
+	    	  return makeNestedJoinExpt(current, currsch, "sectid", "sectionid");
+	      } else if (currentTable.equals("course")) {
+	    	  return makeNestedJoinExpt(current, currsch, "cid", "courseid");
+	      } else {
+	    	  return makeNestedJoinExpt(current, currsch, "did", "deptid");
+	      }*/
+	      
+	   }
+   
    
    /**
     * Compares the block accesses of every join plan given.
@@ -217,5 +258,14 @@ class TablePlanner {
          }
       }
       return null;
+   }
+   
+   
+   private Plan makeNestedJoinExpt(Plan current, Schema currsch, String lhs, String rhs) {
+		 String oprType = "=";
+         Plan p = new BlockJoinPlan(tx, myplan, current, lhs, rhs, oprType);
+         p = addSelectPred(p);
+         return addJoinPred(p, currsch);
+
    }
 }

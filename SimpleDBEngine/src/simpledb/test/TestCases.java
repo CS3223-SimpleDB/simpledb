@@ -38,6 +38,7 @@ public class TestCases {
    public static final String grp6 = "select avg(sid), majorid from student group by majorid";
    
    public static final String expt1 = "select sid, sname, gradyear, majorid, eid, sectionid, grade from student, enroll where sid=studentid";
+   public static final String expt2 = "Select sname, gradyear, dname, cid, title, sectionid, grade from student, dept, course, enroll, section where did = deptid and majorid=did and sectid = sectionid and cid = courseid and studentid=sid";
    
    public static void main(String[] args) {
       try {
@@ -49,37 +50,61 @@ public class TestCases {
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
-         String qry = expt1;
+         String qry = expt2;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
          //HEADER
          //System.out.println("SID\tNAME\tGYEAR\tMAJORID");
          //System.out.println("AGG\tMAJORID");
-         System.out.println("SID\tSNAME\tGRADYEAR\tMAJORID\tEID\tSECTIONID\tGRADE");
+         
+         // expt1
+         //System.out.println("SID\tSNAME\tGRADYEAR\tMAJORID\tEID\tSECTIONID\tGRADE");
+         
+         //expt2
+         System.out.println("SNAME\tGRADYEAR\tDNAME\tCID\tTITLE\tSECTIONID\tGRADE");
          
          while (s.next()) {
             //READ VALUES
             //int agg = s.getInt("avgofsid"); //countofsname maxofgradyear minofgradyear sumofsid avgofsid
-            int sid = s.getInt("sid");
-            String sname = s.getString("sname");
-            int gradyear = s.getInt("gradyear");
-            int majorid = s.getInt("majorid");
-            int eid = s.getInt("eid");
-            int sectionid = s.getInt("sectionid");
-            String grade = s.getString("grade");
             //String majorid = s.getString("dname");
             //int majorid = s.getInt("did");
             //String dname = s.getString("dname");
             //int did = s.getInt("did");
             //int cid = s.getInt("cid");
             //String title = s.getString("title");
-            
+        	 
+        	// expt 1
+        	/*
+        	int sid = s.getInt("sid");
+            String sname = s.getString("sname");
+            int gradyear = s.getInt("gradyear");
+            int majorid = s.getInt("majorid");
+            int eid = s.getInt("eid");
+            int sectionid = s.getInt("sectionid");
+            String grade = s.getString("grade");
+        	 */
+        	 
+        	//expt 2
+        	String sname = s.getString("sname");
+            int gradyear = s.getInt("gradyear");
+            String dname = s.getString("dname");
+            int cid = s.getInt("cid");
+            String title = s.getString("title");
+            int sectionid = s.getInt("sectionid");
+            String grade = s.getString("grade");
+        	 
+
             //PRINT VALUES
             //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid);
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title);
             //System.out.println(agg);
-            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
+            //expt 1
+            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
+            
+            //expt 2
+            System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
+         
          }
          s.close();
          tx.commit();

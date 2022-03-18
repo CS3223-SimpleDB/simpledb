@@ -3,6 +3,7 @@ package simpledb.opt;
 import java.util.*;
 import simpledb.tx.Transaction;
 import simpledb.metadata.MetadataMgr;
+import simpledb.multibuffer.BlockJoinPlan;
 import simpledb.parse.QueryData;
 import simpledb.plan.*;
 import simpledb.materialize.*;
@@ -30,20 +31,67 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
-      
-      // Step 1:  Create a TablePlanner object for each mentioned table
-      for (String tblname : data.tables()) {
-         TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
-         tableplanners.add(tp);
-      }
-      
-      // Step 3:  Choose the lowest-size plan to begin the join order
-      Plan currentplan = getLowestSelectPlan();
+	   
+	   //right deep custom 1
+	  /*    ArrayList<TablePlanner> test = (ArrayList) tableplanners;
+		  List<String> tablenames = new LinkedList<String>();
+		  tablenames.add("student");
+		  tablenames.add("dept");
+		  tablenames.add("course");
+		  tablenames.add("section");
+		  tablenames.add("enroll");
+		  for (int i = 0; i < 5; i++) {
+			  String tableName = tablenames.get(i);
+			  TablePlanner tp = new TablePlanner(tableName, data.pred(), tx, mdm);
+			  tableplanners.add(tp);
+		  }
+	      
+	      Plan currentplan = test.get(0).makeSelectPlanExpt();
 
+	      
+	      for(int j = 1; j < 5; j++) {
+	    	  TablePlanner tp = test.get(j);
+	    	  Plan plan = tp.makeJoinPlanExpt(currentplan);
+	    	  currentplan = plan;
+	      }*/
+	   
+	  /*// right deep custom 2
+	  ArrayList<TablePlanner> test = (ArrayList) tableplanners;
+	  List<String> tablenames = new LinkedList<String>();
+	  tablenames.add("student");
+	  tablenames.add("enroll");
+	  tablenames.add("section");
+	  tablenames.add("course");
+      tablenames.add("dept");
+	  for (int i = 0; i < 5; i++) {
+	      String tableName = tablenames.get(i);
+		  TablePlanner tp = new TablePlanner(tableName, data.pred(), tx, mdm);
+		  tableplanners.add(tp);
+	  }
+	  
+      Plan currentplan = test.get(0).makeSelectPlanExpt();
+
+      
+      for(int j = 1; j < 5; j++) {
+    	  TablePlanner tp = test.get(j);
+    	  Plan plan = tp.makeJoinPlanExpt(currentplan);
+    	  currentplan = plan;
+      }*/
+	   
+	  // Step 1:  Create a TablePlanner object for each mentioned table
+	  for (String tblname : data.tables()) {
+	      TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
+	      tableplanners.add(tp);
+	  }
+	      
+	  // Step 3:  Choose the lowest-size plan to begin the join order
+	  Plan currentplan = getLowestSelectPlan();   
+
+      
       // Step 4:  Repeatedly add a plan to the join order
       while (!tableplanners.isEmpty()) {
-         Plan p = getLowestJoinPlan(currentplan);
-         if (p != null)
+    	  Plan p = getLowestJoinPlan(currentplan);
+    	  if (p != null)
             currentplan = p;
          else  // no applicable join
             currentplan = getLowestProductPlan(currentplan);
