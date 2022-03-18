@@ -55,7 +55,7 @@ public class HashJoinScan implements Scan {
 	}
 
 	public boolean next() {
-		
+
 		// Step 1: check if the partition from current scan has been looped finish
 		if (tempScan != null) {
 			while(tempScan.next()) {
@@ -83,15 +83,15 @@ public class HashJoinScan implements Scan {
 				HashPartition currentPartition = rhsPartitions.get(modVal);
 				UpdateScan partitionScan = currentPartition.open();
 				partitionScan.beforeFirst();
-				
+				tempScan = partitionScan;
 				// Step 5: Loop through all records in partition to match
 				while(partitionScan.next()) {
 					Constant partitionVal = partitionScan.getVal(fldname1);
 					if (value.equals(partitionVal)) {
-						tempScan = partitionScan;
 						return true;
 					}
 				}
+				tempScan.close();
 			}
 			hasmore = rhs.next();
 		}

@@ -37,6 +37,8 @@ public class TestCases {
    public static final String grp5 = "select sum(sid), majorid from student group by majorid";
    public static final String grp6 = "select avg(sid), majorid from student group by majorid";
    
+   public static final String expt1 = "select sid, sname, gradyear, majorid, eid, sectionid, grade from student, enroll where sid=studentid";
+   
    public static void main(String[] args) {
       try {
     	 
@@ -47,21 +49,25 @@ public class TestCases {
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
-         String qry = grp6;
+         String qry = expt1;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
          //HEADER
          //System.out.println("SID\tNAME\tGYEAR\tMAJORID");
-         System.out.println("AGG\tMAJORID");
+         //System.out.println("AGG\tMAJORID");
+         System.out.println("SID\tSNAME\tGRADYEAR\tMAJORID\tEID\tSECTIONID\tGRADE");
          
          while (s.next()) {
             //READ VALUES
-            int agg = s.getInt("avgofsid"); //countofsname maxofgradyear minofgradyear sumofsid avgofsid
-            //int sid = s.getInt("sid");
-            //String sname = s.getString("sname");
-            //int gradyear = s.getInt("gradyear");
+            //int agg = s.getInt("avgofsid"); //countofsname maxofgradyear minofgradyear sumofsid avgofsid
+            int sid = s.getInt("sid");
+            String sname = s.getString("sname");
+            int gradyear = s.getInt("gradyear");
             int majorid = s.getInt("majorid");
+            int eid = s.getInt("eid");
+            int sectionid = s.getInt("sectionid");
+            String grade = s.getString("grade");
             //String majorid = s.getString("dname");
             //int majorid = s.getInt("did");
             //String dname = s.getString("dname");
@@ -73,7 +79,7 @@ public class TestCases {
             //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid);
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title);
             //System.out.println(agg);
-            System.out.println(agg + "\t" + majorid);
+            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
          }
          s.close();
          tx.commit();

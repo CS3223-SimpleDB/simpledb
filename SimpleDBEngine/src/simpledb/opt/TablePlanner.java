@@ -77,6 +77,7 @@ class TablePlanner {
       plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
+    	  System.out.println("no plan");
          return makeProductJoin(current, currsch);
       }
       return cheapestPlan;
