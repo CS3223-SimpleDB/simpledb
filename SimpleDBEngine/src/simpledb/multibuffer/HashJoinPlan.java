@@ -47,7 +47,6 @@ public class HashJoinPlan implements Plan {
 	   public Scan open() {
 		  // see whether lhs/rhs can handle the current buffer choose lhs/rhs to be partitioning table
 		  int availBuff = tx.availableBuffs();
-		  System.out.println(availBuff);
 		  int hashTableSize = availBuff - 1;
 		  
 		  // stores a list of integer and scans
@@ -105,29 +104,6 @@ public class HashJoinPlan implements Plan {
 				   leftScanHasRecord = leftScan.next();
 			   }
 			   
-			   /*
-			   // Step 3: insert into partition
-			   if (hashTable.get(modVal) != null) {
-				   // partition already created
-				   HashPartition currentPartition = hashTable.get(modVal);
-				   UpdateScan partitionScan = currentPartition.open();
-				   
-				   //Step 4: insert new record into partition and close scan
-				   leftScanHasRecord = copy(leftScan, partitionScan);
-				   partitionScan.close();
-			   } else {
-				   // Step 4: Create new TempTable for current partition
-				   HashPartition newPartition = new HashPartition(tx, lhsSchema);
-				   UpdateScan partitionScan = newPartition.open();
-				   
-				   // Step 5: insert new record into partition and close scan;
-				   leftScanHasRecord = copy(leftScan, partitionScan);
-				   partitionScan.close();
-				   
-				   //Step 6: Update hash table
-				   hashTable.put(modVal, newPartition);
-			   }*/
-			   
 		   }
 		   
 		   // Step 7: write all partitions to disc:
@@ -165,12 +141,6 @@ public class HashJoinPlan implements Plan {
 		   return true;
 	   }
 	   
-	   private boolean copy (Scan src, UpdateScan dest) {
-	       dest.insert();
-		   for (String fldname : lhsSchema.fields())
-		       dest.setVal(fldname, src.getVal(fldname));
-		   return src.next();
-	   }
 	   
 	   /**
 	    * Returns an estimate of the number of block accesses

@@ -50,7 +50,7 @@ public class TestCases {
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
-         String qry = expt2;
+         String qry = expt1;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
@@ -75,7 +75,7 @@ public class TestCases {
             //String title = s.getString("title");
         	 
         	// expt 1
-        	/*
+        	
         	int sid = s.getInt("sid");
             String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
@@ -83,8 +83,8 @@ public class TestCases {
             int eid = s.getInt("eid");
             int sectionid = s.getInt("sectionid");
             String grade = s.getString("grade");
-        	 */
         	 
+        	/* 
         	//expt 2
         	String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
@@ -92,7 +92,7 @@ public class TestCases {
             int cid = s.getInt("cid");
             String title = s.getString("title");
             int sectionid = s.getInt("sectionid");
-            String grade = s.getString("grade");
+            String grade = s.getString("grade");*/
         	 
 
             //PRINT VALUES
@@ -100,10 +100,10 @@ public class TestCases {
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title);
             //System.out.println(agg);
             //expt 1
-            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
+            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
             
             //expt 2
-            System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
+            //System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
          
          }
          s.close();

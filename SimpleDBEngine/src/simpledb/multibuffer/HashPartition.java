@@ -30,7 +30,7 @@ public class HashPartition {
    }
    
    /**
-    * Open a table scan for the temporary table.
+    * Open a table scan for the temporary hash partition.
     */
    public UpdateScan open() {
       return new TableScan(tx, tblname, layout);

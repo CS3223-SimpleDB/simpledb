@@ -13,7 +13,7 @@ import simpledb.record.RID;
 public class HashJoinScan implements Scan {
 	private Scan rhs;
 	private Scan tempScan;
-	private HashMap<Integer, HashPartition> rhsPartitions;
+	private HashMap<Integer, HashPartition> lhsPartitions;
 	private String fldname1, fldname2;
 	private int hashTableSize;
 	
@@ -25,10 +25,10 @@ public class HashJoinScan implements Scan {
 	 * @param fldname1 LHS field
 	 * @param fldname2 RHS field
 	 */
-	public HashJoinScan(Scan rhs, HashMap<Integer, HashPartition> rhsPartitions,
+	public HashJoinScan(Scan rhs, HashMap<Integer, HashPartition> lhsPartitions,
 			String fldname1, String fldname2, int hashTableSize) {
 		this.rhs = rhs;
-		this.rhsPartitions = rhsPartitions;
+		this.lhsPartitions = lhsPartitions;
 		this.fldname1 = fldname1;
 		this.fldname2 = fldname2;
 		this.hashTableSize = hashTableSize;
@@ -79,8 +79,8 @@ public class HashJoinScan implements Scan {
 			int modVal = hashCodeVal % hashTableSize;
 			
 			// Step 4: Try to retrieve temporary table of the partition
-			if (rhsPartitions.get(modVal) != null) {
-				HashPartition currentPartition = rhsPartitions.get(modVal);
+			if (lhsPartitions.get(modVal) != null) {
+				HashPartition currentPartition = lhsPartitions.get(modVal);
 				UpdateScan partitionScan = currentPartition.open();
 				partitionScan.beforeFirst();
 				tempScan = partitionScan;
