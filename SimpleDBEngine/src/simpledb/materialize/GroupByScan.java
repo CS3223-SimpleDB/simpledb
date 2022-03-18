@@ -120,7 +120,8 @@ public class GroupByScan implements Scan {
       return getVal(fldname).asString();
    }
    
-   /** Return true if the specified field is either a 
+   /** 
+    * Return true if the specified field is either a 
     * grouping field or created by an aggregation function.
     * @see simpledb.query.Scan#hasField(java.lang.String)
     */
