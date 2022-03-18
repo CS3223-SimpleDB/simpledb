@@ -127,7 +127,7 @@ public class CreateStudentDB {
             stmt.executeUpdate(s + studvals[i]);
          System.out.println("STUDENT records inserted.");
 
-         s = "create table DEPT(DId int, DName varchar(8))";
+         s = "create table DEPT(DId int, DName varchar(20))";
          stmt.executeUpdate(s);
          System.out.println("Table DEPT created.");
          
