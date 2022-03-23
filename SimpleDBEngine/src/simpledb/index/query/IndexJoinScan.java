@@ -16,7 +16,8 @@ public class IndexJoinScan implements Scan {
    private Scan lhs;
    private Index idx;
    private String joinfield;
-   private TableScan rhs;  
+   private TableScan rhs;
+   private boolean prev;
    
    /**
     * Creates an index join scan for the specified LHS scan and 
@@ -31,6 +32,7 @@ public class IndexJoinScan implements Scan {
       this.idx  = idx;
       this.joinfield = joinfield;
       this.rhs = rhs;
+      this.prev=false;
       beforeFirst();
    }
    
@@ -59,10 +61,14 @@ public class IndexJoinScan implements Scan {
       while (true) {
          if (idx.next()) {
             rhs.moveToRid(idx.getDataRid());
+            prev = true;
             return true;
          }
-         if (!lhs.next())
-            return false;
+         if (!lhs.next()) {
+        	 rhs.close();
+        	 return false;
+         }
+            
          resetIndex();
       }
    }

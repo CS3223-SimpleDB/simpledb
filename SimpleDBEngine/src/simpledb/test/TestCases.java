@@ -38,7 +38,7 @@ public class TestCases {
    public static final String grp6 = "select avg(sid), majorid from student group by majorid";
    
    public static final String expt1 = "select sid, sname, gradyear, majorid, eid, sectionid, grade from student, enroll where sid=studentid";
-   public static final String expt2 = "Select sname, gradyear, dname, cid, title, sectionid, grade from student, dept, course, enroll, section where did = deptid and majorid=did and sectid = sectionid and cid = courseid and studentid=sid";
+   public static final String expt2 = "select sname, gradyear, dname, cid, title, sectionid, grade from student, dept, course, enroll, section where did = deptid and majorid=did and sectid = sectionid and cid = courseid and studentid=sid";
    
    public static void main(String[] args) {
       try {
@@ -50,7 +50,7 @@ public class TestCases {
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
          //QUERY
-         String qry = expt1;
+         String qry = expt2;
          
          Plan p = planner.createQueryPlan(qry, tx);
          Scan s = p.open();
@@ -76,15 +76,15 @@ public class TestCases {
         	 
         	// expt 1
         	
-        	int sid = s.getInt("sid");
-            String sname = s.getString("sname");
-            int gradyear = s.getInt("gradyear");
-            int majorid = s.getInt("majorid");
-            int eid = s.getInt("eid");
-            int sectionid = s.getInt("sectionid");
-            String grade = s.getString("grade");
+        	//int sid = s.getInt("sid");
+            //String sname = s.getString("sname");
+            //int gradyear = s.getInt("gradyear");
+            //int majorid = s.getInt("majorid");
+            //int eid = s.getInt("eid");
+            //int sectionid = s.getInt("sectionid");
+            //String grade = s.getString("grade");
         	 
-        	/* 
+        	
         	//expt 2
         	String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
@@ -92,7 +92,7 @@ public class TestCases {
             int cid = s.getInt("cid");
             String title = s.getString("title");
             int sectionid = s.getInt("sectionid");
-            String grade = s.getString("grade");*/
+            String grade = s.getString("grade");
         	 
 
             //PRINT VALUES
@@ -100,10 +100,10 @@ public class TestCases {
             //System.out.println(dname + "\t" + did + "\t" + cid + "\t" + title);
             //System.out.println(agg);
             //expt 1
-            System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
+            //System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
             
             //expt 2
-            //System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
+            System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
          
          }
          s.close();

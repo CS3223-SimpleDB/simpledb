@@ -52,7 +52,10 @@ public class BufferMgr {
     * @param buff the buffer to be unpinned
     */
    public synchronized void unpin(Buffer buff) {
-      buff.unpin();
+	  if (buff == null) {
+		  return;
+	  }
+	  buff.unpin();
       if (!buff.isPinned()) {
          numAvailable++;
          notifyAll();
