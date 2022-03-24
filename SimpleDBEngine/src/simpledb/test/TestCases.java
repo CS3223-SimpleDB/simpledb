@@ -10,6 +10,24 @@ import java.io.*;
 public class TestCases {
    //SELECT
    public static final String select1 = "select sid, sname, gradyear, majorid from student";
+   
+   //INDEX SELECT
+   public static final String hashindexselect1 = "select sid, sname from student where sid = 98";
+   public static final String hashindexselect2 = "select sid, sname from student where sid = 500"; // no such sid
+   public static final String hashindexselect3 = "select cid, title, deptid from course where cid=52";
+   public static final String hashindexselect4= "select sectid, courseid, prof, yearoffered from section where sectid=143";
+   public static final String btreeindexselect1 = "select courseid, prof, yearoffered from section where courseid=242";
+   public static final String btreeindexselect2 = "select courseid, prof, yearoffered from section where courseid=20"; // no such courseid
+   public static final String btreeindexselect3 = "select cid, title, deptid from course where deptid=290";
+   public static final String btreeindexselectsort1 = "select courseid, prof, yearoffered from section where courseid=242 order by prof asc";
+   //EQUI-PREDICATES
+   public static final String equi1 = "select studentid, sectionid, grade from enroll where studentid=99";
+   public static final String equi2 = "select studentid, sectionid, grade from enroll where grade='B+' and studentid=99";
+   public static final String equi3 = "select studentid, sectionid, grade from enroll where grade='A' and studentid=99"; // no results
+   public static final String equi4 = "select cid, title, deptid from course where deptid=410 order by title asc";
+   public static final String equi5 = "select sectid, courseid, prof, yearoffered from section where yearoffered=1966 order by prof asc";
+   public static final String equi6 = "select sid, sname, gradyear, majorid from student where gradyear=1994 order by majorid";
+   public static final String equi7 = "select sid, sname, gradyear, majorid from student where gradyear=1994 and majorid=180";
    //NON-EQUI
    public static final String nonequi1 = "select sid, sname, gradyear, majorid from student where sid < 5";
    public static final String nonequi2 = "select sid, sname, gradyear, majorid from student where sid > 5";
