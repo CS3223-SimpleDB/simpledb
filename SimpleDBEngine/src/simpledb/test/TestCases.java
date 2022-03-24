@@ -8,28 +8,33 @@ import simpledb.server.SimpleDB;
 import java.io.*;
 
 public class TestCases {
-   
+   //SELECT
    public static final String select1 = "select sid, sname, gradyear, majorid from student";
+   //NON-EQUI
    public static final String nonequi1 = "select sid, sname, gradyear, majorid from student where sid < 5";
    public static final String nonequi2 = "select sid, sname, gradyear, majorid from student where sid > 5";
    public static final String nonequi3 = "select sid, sname, gradyear, majorid from student where sid <= 5";
    public static final String nonequi4 = "select sid, sname, gradyear, majorid from student where sid >= 5";
    public static final String nonequi5 = "select sid, sname, gradyear, majorid from student where sid != 5";
    public static final String nonequi6 = "select sid, sname, gradyear, majorid from student where sid <> 5";
+   //ORDER BY
    public static final String order1 = "select sid, sname, gradyear, majorid from student order by gradyear";
    public static final String order2 = "select sid, sname, gradyear, majorid from student order by gradyear asc";
    public static final String order3 = "select sid, sname, gradyear, majorid from student order by gradyear desc";
    public static final String order4 = "select sid, sname, gradyear, majorid from student order by gradyear, sid";
    public static final String order5 = "select sid, sname, gradyear, majorid from student order by gradyear, sid desc";
+   //DISTINCT
    public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
    public static final String distinct2p1 = "select gradyear, majorid from student order by gradyear";
    public static final String distinct2p2 = "select distinct gradyear, majorid from student";
+   //AGGREGATE
    public static final String agg1 = "select count(sname) from student";
    public static final String agg2 = "select max(gradyear) from student";
    public static final String agg3 = "select min(gradyear) from student";
    public static final String agg4 = "select sum(sid) from student";
    public static final String agg5 = "select avg(gradyear) from student";
    public static final String agg6 = "select count(sname), min(gradyear), max(gradyear), sum(sid), avg(sid) from student";
+   //GROUP BY
    public static final String grp1 = "select count(sname), gradyear from student group by gradyear";
    public static final String grp2 = "select max(gradyear), majorid from student group by majorid";
    public static final String grp3 = "select min(gradyear), majorid from student group by majorid";
@@ -43,17 +48,16 @@ public class TestCases {
    public static final String grp11 = "select count(sectid), yearoffered from section group by yearoffered";
    public static final String grp12 = "select count(title), deptid from course group by deptid";
    public static final String grp13 = "select count(did), dname from dept group by dname";
-   public static final String nestedjoin1 = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
-   public static final String nestedjoin2 = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
+   //2-WAY JOIN
    public static final String expt1 = "select sid, sname, gradyear, majorid, eid, sectionid, grade from student, enroll where sid=studentid";
+   //4-WAY JOIN
    public static final String expt2 = "select sname, gradyear, dname, cid, title, sectionid, grade from student, dept, course, enroll, section where did = deptid and majorid=did and sectid = sectionid and cid = courseid and studentid=sid";
-   
+   //public static final String nestedjoin1 = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
+   //public static final String nestedjoin2 = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";   
    public static void main(String[] args) {
       try {
-    	 
          // Get starting timestamp of function runtime
          long start = System.currentTimeMillis();
-    	  
          SimpleDB db = new SimpleDB("studentdb");
          Transaction tx  = db.newTx();
          Planner planner = db.planner();
@@ -81,7 +85,7 @@ public class TestCases {
          //agg6
          //System.out.println("COUNT\tMIN\tMAX\tSUM\tAVG");
          
-         //GROUP
+         //GROUP BY
          //grp1
          //System.out.println("COUNT\tGYEAR");
          //grp2
@@ -164,7 +168,7 @@ public class TestCases {
             System.out.println(countofsname + "\t" + minofgradyear + "\t" + maxofgradyear + "\t" + sumofsid + "\t" + avgofsid);
             */
             
-            //GROUP
+            //GROUP BY
             /*
             //grp1
             int countofsname = s.getInt("countofsname");
@@ -250,7 +254,7 @@ public class TestCases {
             System.out.println(countofdid + "\t" + dname);
             */
             
-            //EXPT 1
+            //2-WAY JOIN
             /*
             int sid = s.getInt("sid");
             String sname = s.getString("sname");
@@ -262,7 +266,7 @@ public class TestCases {
             System.out.println(sid + "\t" + sname + "\t" + gradyear + "\t" + majorid + "\t" + eid + "\t" + sectionid + "\t" + grade);
             */
         	   
-        	   //EXPT 2
+        	   //4-WAY JOIN
         	   /*
         	   String sname = s.getString("sname");
             int gradyear = s.getInt("gradyear");
@@ -274,16 +278,12 @@ public class TestCases {
             System.out.println(sname + "\t" + gradyear + "\t" + dname + "\t" + cid + "\t" + title + "\t" + sectionid + "\t" + grade);
              */
          }
-         
          s.close();
          tx.commit();
-         
          // Get ending timestamp of function runtime
          long end = System.currentTimeMillis();
-         
          // Print out total runtime of function
          System.out.println("Total runtime takes " + (end - start) + "ms");
-         
       } catch(Exception e) {
           e.printStackTrace();    
       }   
