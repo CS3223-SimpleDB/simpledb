@@ -39,6 +39,10 @@ public class TestCases {
    public static final String grp7 = "select count(eid), sectionid, grade from enroll group by sectionid, grade";
    public static final String grp8 = "select count(sid), sname, majorid, gradyear from student group by sname, majorid, gradyear";
    public static final String grp9 = "select count(eid), studentid, sectionid, grade from enroll group by studentid, sectionid, grade";
+   public static final String grp10 = "select count(eid), grade from enroll group by grade";
+   public static final String grp11 = "select count(sectid), yearoffered from section group by yearoffered";
+   public static final String grp12 = "select count(title), deptid from course group by deptid";
+   public static final String grp13 = "select count(did), dname from dept group by dname";
    public static final String nestedjoin1 = "select sid, sname, gradyear, dname from student, dept where did = majorid and gradyear!=2022 order by gradyear desc, sid";
    public static final String nestedjoin2 = "select dname, did, cid, title from course, dept where did!=cid order by did, cid desc";
    public static final String expt1 = "select sid, sname, gradyear, majorid, eid, sectionid, grade from student, enroll where sid=studentid";
@@ -98,6 +102,14 @@ public class TestCases {
          //System.out.println("COUNT\tSNAME\tMAJORID\tGYEAR");
          //grp9
          //System.out.println("COUNT\tSNAME\tMAJORID\tGYEAR");
+         //grp10
+         //System.out.println("COUNT\tGRADE");
+         //grp11
+         //System.out.println("COUNT\tYEAR");
+         //grp12
+         //System.out.println("COUNT\tDEPTID");
+         //grp13
+         //System.out.println("COUNT\tDNAME");
          
          //EXPT 1
          //System.out.println("SID\tSNAME\tGRADYEAR\tMAJORID\tEID\tSECTIONID\tGRADE");
@@ -212,6 +224,30 @@ public class TestCases {
             int majorid = s.getInt("majorid");
             int gradyear = s.getInt("gradyear");
             System.out.println(countofsid + "\t" + sname + "\t" + majorid + "\t" + gradyear);
+            */
+            /*
+            //grp10
+            int countofeid = s.getInt("countofeid");
+            String grade = s.getString("grade");
+            System.out.println(countofeid + "\t" + grade);
+            */
+            /*
+            //grp11
+            int countofsectid = s.getInt("countofsectid");
+            int yearoffered = s.getInt("yearoffered");
+            System.out.println(countofsectid + "\t" + yearoffered);
+            */
+            /*
+            //grp12
+            int countoftitle = s.getInt("countoftitle");
+            int deptid = s.getInt("deptid");
+            System.out.println(countoftitle + "\t" + deptid);
+            */
+            /*
+            //grp13
+            int countofdid = s.getInt("countofdid");
+            String dname = s.getString("dname");
+            System.out.println(countofdid + "\t" + dname);
             */
             
             //EXPT 1
