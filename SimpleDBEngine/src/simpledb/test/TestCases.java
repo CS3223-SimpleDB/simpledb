@@ -16,6 +16,7 @@ public class TestCases {
    public static final String hashindexselect2 = "select sid, sname from student where sid = 500"; // no such sid
    public static final String hashindexselect3 = "select cid, title, deptid from course where cid=52";
    public static final String hashindexselect4= "select sectid, courseid, prof, yearoffered from section where sectid=143";
+   public static final String hashindexselect5 = "select eid, studentid, sectionid, grade from enroll where grade='A+'";
    public static final String btreeindexselect1 = "select courseid, prof, yearoffered from section where courseid=242";
    public static final String btreeindexselect2 = "select courseid, prof, yearoffered from section where courseid=20"; // no such courseid
    public static final String btreeindexselect3 = "select cid, title, deptid from course where deptid=290";

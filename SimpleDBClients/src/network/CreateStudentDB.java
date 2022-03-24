@@ -396,6 +396,10 @@ public class CreateStudentDB {
          s = "create index enrollsection on ENROLL(sectionid) using btree";
          stmt.executeUpdate(s);
          System.out.println("Added enrollsection index");
+         
+         s = "create index enrollgrade on ENROLL(grade) using hash";
+         stmt.executeUpdate(s);
+         System.out.println("Added enrollgrade index");
 
          s = "insert into ENROLL(EId, StudentId, SectionId, Grade) values ";
          String[] enrollvals = {"(14, 1, 13, 'A')",
