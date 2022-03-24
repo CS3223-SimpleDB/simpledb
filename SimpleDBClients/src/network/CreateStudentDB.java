@@ -160,7 +160,7 @@ public class CreateStudentDB {
 		         "(220,'music')",
 		         "(230,'photography')",
 		         "(240,'theatre')",
-		         "(250,'drama')",
+		         "(250,'drama studies')",
 		         "(260,'cinematography')",
 		         "(270,'hotel management')",
 		         "(280,'construction')",
@@ -271,7 +271,7 @@ public class CreateStudentDB {
 		         "(652,'mechanical engineering',100)",
 		         "(662,'industrial production',100)",
 		         "(672,'aerospace engineering',100)",
-		         "(682,'civil engineering',100)",
+		         "(682,'biomed engineering',100)",
 		         "(692,'electronics engineering',100)",
 		         "(702,'fine arts',200)"};
          for (int i=0; i<coursevals.length; i++)
