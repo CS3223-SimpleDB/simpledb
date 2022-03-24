@@ -160,7 +160,7 @@ public class CreateStudentDB {
 		         "(220,'music')",
 		         "(230,'photography')",
 		         "(240,'theatre')",
-		         "(250,'drama')",
+		         "(250,'drama studies')",
 		         "(260,'cinematography')",
 		         "(270,'hotel management')",
 		         "(280,'construction')",
