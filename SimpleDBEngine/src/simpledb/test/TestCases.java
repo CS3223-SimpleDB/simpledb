@@ -26,7 +26,7 @@ public class TestCases {
    public static final String equi2 = "select studentid, sectionid, grade from enroll where grade='B+' and studentid=99";
    public static final String equi3 = "select studentid, sectionid, grade from enroll where grade='A' and studentid=99"; // no results
    public static final String equi4 = "select cid, title, deptid from course where deptid=410 order by title asc";
-   public static final String equi5 = "select sectid, courseid, prof, yearoffered from section where yearoffered=1966 order by prof asc";
+   public static final String equi5 = "select sectid, courseid, prof, yearoffered from section where yearoffered=1966 order by prof asc"; // no results
    public static final String equi6 = "select sid, sname, gradyear, majorid from student where gradyear=1994 order by majorid";
    public static final String equi7 = "select sid, sname, gradyear, majorid from student where gradyear=1994 and majorid=180";
    //NON-EQUI
@@ -48,7 +48,7 @@ public class TestCases {
    //DISTINCT
    public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
    public static final String distinct2p1 = "select gradyear, majorid from student order by gradyear";
-   public static final String distinct2p2 = "select distinct gradyear, majorid from student";
+   public static final String distinct2p2 = "select distinct gradyear, majorid from student order by gradyear";
    public static final String distinct3 = "select distinct grade from enroll";
    //AGGREGATE
    public static final String agg1 = "select count(sname) from student";
@@ -56,17 +56,17 @@ public class TestCases {
    public static final String agg3 = "select min(gradyear) from student";
    public static final String agg4 = "select sum(sid) from student";
    public static final String agg5 = "select avg(gradyear) from student";
-   public static final String agg6 = "select count(sname), min(gradyear), max(gradyear), sum(sid), avg(sid) from student";
+   public static final String agg6 = "select count(sname), min(gradyear), max(gradyear), sum(sid), avg(sid) from student"; // more complex
    //GROUP BY
-   public static final String grp1 = "select count(sname), gradyear from student group by gradyear";
+   public static final String grp1 = "select gradyear, count(sname) from student group by gradyear";
    public static final String grp2 = "select max(gradyear), majorid from student group by majorid";
    public static final String grp3 = "select min(gradyear), majorid from student group by majorid";
    public static final String grp4 = "select sum(sid), majorid from student group by majorid";
    public static final String grp5 = "select avg(gradyear), majorid from student group by majorid";
    public static final String grp6 = "select count(sid), majorid, gradyear from student group by majorid, gradyear";
    public static final String grp7 = "select count(eid), sectionid, grade from enroll group by sectionid, grade";
-   public static final String grp8 = "select count(sid), sname, majorid, gradyear from student group by sname, majorid, gradyear";
-   public static final String grp9 = "select count(eid), studentid, sectionid, grade from enroll group by studentid, sectionid, grade";
+   public static final String grp8 = "select count(sid), sname, majorid, gradyear from student group by sname, majorid, gradyear"; // more complex
+   public static final String grp9 = "select count(eid), studentid, sectionid, grade from enroll group by studentid, sectionid, grade"; //more complex
    public static final String grp10 = "select count(eid), grade from enroll group by grade";
    public static final String grp11 = "select count(sectid), yearoffered from section group by yearoffered";
    public static final String grp12 = "select count(title), deptid from course group by deptid";

@@ -119,4 +119,8 @@ public class IndexInfo {
       }
       return new Layout(sch);
    }
+   
+   public String getIndexStructure() {
+	   return indexStructure;
+   }
 }

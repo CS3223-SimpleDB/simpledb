@@ -78,6 +78,6 @@ public class IndexSelectPlan implements Plan {
    }
    
    public String toString() {
-	   return "indexselect (" + p.toString() + ")";
+	   return ii.getIndexStructure() + " indexselect ("  + p.toString() + ")";
    }
 }
