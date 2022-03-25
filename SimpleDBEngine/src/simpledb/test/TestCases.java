@@ -36,16 +36,20 @@ public class TestCases {
    public static final String nonequi4 = "select sid, sname, gradyear, majorid from student where sid >= 5";
    public static final String nonequi5 = "select sid, sname, gradyear, majorid from student where sid != 5";
    public static final String nonequi6 = "select sid, sname, gradyear, majorid from student where sid <> 5";
+   public static final String nonequi7 = "select cid, title, deptid from course where cid > 200";
+   public static final String nonequi8 = "select sectid, courseid, prof, yearoffered from section where sectid < 300";
    //ORDER BY
    public static final String order1 = "select sid, sname, gradyear, majorid from student order by gradyear";
    public static final String order2 = "select sid, sname, gradyear, majorid from student order by gradyear asc";
    public static final String order3 = "select sid, sname, gradyear, majorid from student order by gradyear desc";
    public static final String order4 = "select sid, sname, gradyear, majorid from student order by gradyear, sid";
    public static final String order5 = "select sid, sname, gradyear, majorid from student order by gradyear, sid desc";
+   public static final String order6 = "select cid, title, deptid from course order by title desc";
    //DISTINCT
    public static final String distinct1 = "select distinct sid, sname, gradyear, majorid from student";
    public static final String distinct2p1 = "select gradyear, majorid from student order by gradyear";
    public static final String distinct2p2 = "select distinct gradyear, majorid from student";
+   public static final String distinct3 = "select distinct grade from enroll";
    //AGGREGATE
    public static final String agg1 = "select count(sname) from student";
    public static final String agg2 = "select max(gradyear) from student";
