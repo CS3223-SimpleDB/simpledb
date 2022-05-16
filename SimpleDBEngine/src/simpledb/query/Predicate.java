@@ -150,6 +150,24 @@ public class Predicate {
       return null;
    }
    
+   public List<String> equatesWithFieldInequality(String fldname) {
+	      for (Term t : terms) {
+	    	 String s;
+	    	 if (t.getOpr().equals("=")) {
+	    		 s = t.equatesWithField(fldname);
+	    	 } else {
+	    		 s = t.equatesWithFieldDirection(fldname);
+	    	 }
+	         if ((s != null)) {
+	        	 List<String> result = new LinkedList<String>();
+	        	 result.add(s);
+	        	 result.add(t.getOpr());
+	        	 return result;
+	         }
+	      }
+	      return null;
+	   }
+   
    public String equatesWithFieldPlannerChecks(String fldname) {
 	   for (Term t : terms) {
 	       String s = t.equatesWithField(fldname);

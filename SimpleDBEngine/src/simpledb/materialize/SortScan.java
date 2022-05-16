@@ -28,12 +28,21 @@ public class SortScan implements Scan {
     */
    public SortScan(List<TempTable> runs, RecordComparator comp) {
       this.comp = comp;
-      s1 = (UpdateScan) runs.get(0).open();
-      hasmore1 = s1.next();
-      if (runs.size() > 1) {
-         s2 = (UpdateScan) runs.get(1).open();
-         hasmore2 = s2.next();
+      if (runs.size() != 0) {
+          s1 = (UpdateScan) runs.get(0).open();
+          hasmore1 = s1.next();
+          if (runs.size() > 1) {
+             s2 = (UpdateScan) runs.get(1).open();
+             hasmore2 = s2.next();
+          }
+      } else {
+    	  s1 = null;
+    	  s2 = null;
+    	  hasmore1 = false;
+    	  hasmore2 = false;
       }
+
+
    }
    
    /**
@@ -44,9 +53,12 @@ public class SortScan implements Scan {
     * @see simpledb.query.Scan#beforeFirst()
     */
    public void beforeFirst() {
-      currentscan = null;
-      s1.beforeFirst();
-      hasmore1 = s1.next();
+	  if (s1 != null) {
+	      currentscan = null;
+	      s1.beforeFirst();
+	      hasmore1 = s1.next();
+	  }
+
       if (s2 != null) {
          s2.beforeFirst();
          hasmore2 = s2.next();
@@ -71,22 +83,22 @@ public class SortScan implements Scan {
       if (!hasmore1 && !hasmore2)
          return false;
       else if (hasmore1 && hasmore2) {
-    	  List<String> resultList = comp.compareSort(s1, s2);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  
-        	  if(direction.equals("asc") && (resultVal < 0)) {
-        		  currentscan = s1;
-        	  } else if (direction.equals("desc") && (resultVal > 0)) {
-        		  currentscan = s1;
-        	  } else {
-        		  currentscan = s2;
-        	  }
-          } else {
-        	  currentscan = s2;
-          } 
-            
+        	  List<String> resultList = comp.compareSort(s1, s2);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  if(direction.equals("asc") && (resultVal < 0)) {
+            		  currentscan = s1;
+            	  } else if (direction.equals("desc") && (resultVal > 0)) {
+            		  currentscan = s1;
+            	  } else if (direction.equals("random") && (resultVal < 0)) {
+            		  currentscan = s1;
+            	  }else {
+            		  currentscan = s2;
+            	  }
+              } else {
+            	  currentscan = s2;
+              } 
       }
       else if (hasmore1)
          currentscan = s1;
@@ -100,7 +112,9 @@ public class SortScan implements Scan {
     * @see simpledb.query.Scan#close()
     */
    public void close() {
-      s1.close();
+	  if(s1 != null) {
+		  s1.close();
+	  }
       if (s2 != null)
          s2.close();
    }
@@ -159,5 +173,9 @@ public class SortScan implements Scan {
       s1.moveToRid(rid1);
       if (rid2 != null)
          s2.moveToRid(rid2);
+   }
+   
+   public boolean isEmpty() {
+	   return ((s1 == null) && (s2 == null));
    }
 }

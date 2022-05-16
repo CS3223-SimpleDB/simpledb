@@ -69,4 +69,19 @@ public class ProjectPlan implements Plan {
    public Schema schema() {
       return schema;
    }
+   
+   public String getFields() {
+	   if (schema.fields().size() == 0) {
+		   return "";
+	   }
+	   String fieldsString = schema.fields().get(0);
+	   for (int i = 1; i < schema.fields().size(); i++) {
+		   fieldsString = fieldsString + ", " + schema.fields().get(i);
+	   }
+	   return fieldsString;
+   }
+   
+   public String toString() {
+	   return "project ( " + getFields() + ") (" + p.toString() + ")";
+   }
 }

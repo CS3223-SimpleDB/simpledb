@@ -1,6 +1,7 @@
 package simpledb.opt;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import simpledb.tx.Transaction;
 import simpledb.record.*;
@@ -10,6 +11,7 @@ import simpledb.index.planner.*;
 import simpledb.materialize.MergeJoinPlan;
 import simpledb.multibuffer.MultibufferProductPlan;
 import simpledb.multibuffer.BlockJoinPlan;
+import simpledb.multibuffer.HashJoinPlan;
 import simpledb.plan.*;
 
 /**
@@ -53,6 +55,13 @@ class TablePlanner {
       return addSelectPred(p);
    }
    
+   public Plan makeSelectPlanExpt() {
+	      Plan p = makeIndexSelect();
+	      if (p == null)
+	         p = myplan;
+	      return addSelectPred(p);
+	}
+   
    /**
     * Constructs a join plan of the specified plan and the table.
     * The plan will use the join with the lowest block accesses.
@@ -69,15 +78,50 @@ class TablePlanner {
     	  return null;
       }
       ArrayList<Plan> plans = new ArrayList<>();
-      plans.add(makeIndexJoin(current, currsch));
-      plans.add(makeSortJoin(current, currsch));
-      plans.add(makeNestedJoin(current, currsch));
+      //plans.add(makeIndexJoin(current, currsch));
+      //plans.add(makeSortJoin(current, currsch));
+      //plans.add(makeNestedJoin(current, currsch));
+      plans.add(makeHashJoin(current, currsch));
       Plan cheapestPlan = lowestCostPlan(plans);
       if (cheapestPlan == null) {
          return makeProductJoin(current, currsch);
       }
       return cheapestPlan;
    }
+   
+   public Plan makeJoinPlanExpt(Plan current) {
+	      Schema currsch = current.schema();
+	      Predicate joinpred = mypred.joinSubPred(myschema, currsch);
+	      if (joinpred == null) {
+	    	  return null;
+	      }
+	      String currentTable = myplan.toString();
+	      
+	      // first right deep
+	      if (currentTable.equals("dept")) {
+	    	  return makeNestedJoinExpt(current, currsch, "did", "majorid");
+	      }	else if (currentTable.equals("course")) {
+	    	  return makeNestedJoinExpt(current, currsch, "deptid", "did");
+	      } else if (currentTable.equals("section")) {
+	    	  return makeNestedJoinExpt(current, currsch, "courseid", "cid");
+	      } else {
+	    	  return makeNestedJoinExpt(current, currsch, "sectionid", "sectid");
+	      }
+	      
+	      // second right deep
+	      /*
+	      if (currentTable.equals("enroll")) {
+	    	  return makeNestedJoinExpt(current, currsch, "studentid", "sid");
+	      }	else if (currentTable.equals("section")) {
+	    	  return makeNestedJoinExpt(current, currsch, "sectid", "sectionid");
+	      } else if (currentTable.equals("course")) {
+	    	  return makeNestedJoinExpt(current, currsch, "cid", "courseid");
+	      } else {
+	    	  return makeNestedJoinExpt(current, currsch, "did", "deptid");
+	      }*/
+	      
+	   }
+   
    
    /**
     * Compares the block accesses of every join plan given.
@@ -143,8 +187,10 @@ class TablePlanner {
    
    private Plan makeIndexJoin(Plan current, Schema currsch) {
       for (String fldname : indexes.keySet()) {
+    	 
          String outerfield = mypred.equatesWithFieldPlannerChecks(fldname);
          if (outerfield != null && currsch.hasField(outerfield)) {
+        	
             IndexInfo ii = indexes.get(fldname);
             Plan p = new IndexJoinPlan(current, myplan, ii, outerfield);
             p = addSelectPred(p);
@@ -166,6 +212,28 @@ class TablePlanner {
 	   return null;
    }
    
+   
+   private Plan makeHashJoin(Plan current, Schema currsch) {
+	   for (String fldname : myschema.fields()) {
+		   // if the condition has a field = field condition
+		   String leftfield = mypred.equatesWithFieldPlannerChecks(fldname);
+		   if (leftfield != null && currsch.hasField(leftfield)) {
+			   /* comment out this check for v1 of hash join, assuming no need recursive partition
+		   	   if (tx.availableBuffs() < myplan.recordsOutput()) {
+		   		   Plan p = new MultibufferProductPlan(tx, current, myplan);
+		   		   p = addSelectPred(p);
+		   		   return addJoinPred(p, currsch);
+		   	   }
+		   	   */
+		   	   // since size of T2 > available buffer, create hash join plan
+			   Plan p = new HashJoinPlan(tx, current, myplan, leftfield, fldname);
+			   p = addSelectPred(p);
+			   return addJoinPred(p, currsch);
+		   }
+	   }
+	   return null;
+   }
+   
    /**
     * Checks for common join fields between the two joining schemas.
     * Constructs a new BlockJoinPlan if at least one common join field is found.
@@ -176,13 +244,27 @@ class TablePlanner {
     */
    private Plan makeNestedJoin(Plan current, Schema currsch) {
       for (String fldname : myschema.fields()) {
-         String commonfield = mypred.equatesWithField(fldname);
-         if (commonfield != null && currsch.hasField(commonfield)) {
-            Plan p = new BlockJoinPlan(tx, current, myplan, commonfield);
-            p = addSelectPred(p);
-            return addJoinPred(p, currsch);
+    	 List<String> result = mypred.equatesWithFieldInequality(fldname);
+    	 
+         if (result != null) {
+        	 String commonfield = result.get(0);
+        	 if (currsch.hasField(commonfield)) {
+        		 String oprType = result.get(1);
+                 Plan p = new BlockJoinPlan(tx, myplan, current, fldname, commonfield, oprType);
+                 p = addSelectPred(p);
+                 return addJoinPred(p, currsch);
+        	 }
          }
       }
       return null;
+   }
+   
+   
+   private Plan makeNestedJoinExpt(Plan current, Schema currsch, String lhs, String rhs) {
+		 String oprType = "=";
+         Plan p = new BlockJoinPlan(tx, myplan, current, lhs, rhs, oprType);
+         p = addSelectPred(p);
+         return addJoinPred(p, currsch);
+
    }
 }

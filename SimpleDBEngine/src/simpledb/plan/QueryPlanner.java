@@ -18,4 +18,8 @@ public interface QueryPlanner {
     * @return a plan for that query
     */
    public Plan createPlan(QueryData data, Transaction tx);
+   
+   default void printQueryPlan(String queryPlan) {
+	   System.out.println(queryPlan);
+   }
 }

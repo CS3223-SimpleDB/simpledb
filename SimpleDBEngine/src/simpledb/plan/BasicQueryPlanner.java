@@ -52,6 +52,10 @@ public class BasicQueryPlanner implements QueryPlanner {
       }
       
       p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      
+      // Display query plan
+      printQueryPlan(p.toString());
+      
       return p;
    }
 }

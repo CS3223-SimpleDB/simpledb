@@ -3,10 +3,9 @@ package simpledb.opt;
 import java.util.*;
 import simpledb.tx.Transaction;
 import simpledb.metadata.MetadataMgr;
+import simpledb.multibuffer.BlockJoinPlan;
 import simpledb.parse.QueryData;
 import simpledb.plan.*;
-import simpledb.query.Predicate;
-import simpledb.query.Term;
 import simpledb.materialize.*;
 
 /**
@@ -32,33 +31,46 @@ public class HeuristicQueryPlanner implements QueryPlanner {
     * results in the smallest output.
     */
    public Plan createPlan(QueryData data, Transaction tx) {
+	  // Step 1:  Create a TablePlanner object for each mentioned table
+	  for (String tblname : data.tables()) {
+	      TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
+	      tableplanners.add(tp);
+	  }
+	      
+	  // Step 3:  Choose the lowest-size plan to begin the join order
+	  Plan currentplan = getLowestSelectPlan();   
+
       
-      // Step 1:  Create a TablePlanner object for each mentioned table
-      for (String tblname : data.tables()) {
-         TablePlanner tp = new TablePlanner(tblname, data.pred(), tx, mdm);
-         tableplanners.add(tp);
-      }
-      
-      // Step 2:  Choose the lowest-size plan to begin the join order
-      Plan currentplan = getLowestSelectPlan();
-      
-      // Step 3:  Repeatedly add a plan to the join order
+      // Step 4:  Repeatedly add a plan to the join order
       while (!tableplanners.isEmpty()) {
-         Plan p = getLowestJoinPlan(currentplan);
-         if (p != null)
+    	  Plan p = getLowestJoinPlan(currentplan);
+    	  if (p != null)
             currentplan = p;
          else  // no applicable join
             currentplan = getLowestProductPlan(currentplan);
       }
       
-      // Step 4.  Project on the field names and return
+      // Step 5.  Project on the field names
       Plan p = new ProjectPlan(currentplan, data.fields());
       
-      if (data.orderByAttributes().isEmpty()) {
-          return p;
+      // Step 6.  Group and/or aggregate the given field names if queried for
+      if (!data.groupByAttributes().isEmpty() || !data.aggregates().isEmpty()) {
+         p = new GroupByPlan(tx, currentplan, data.groupByAttributes(), data.aggregates());
       }
       
-      p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      // Step 7.  Order by the given field names in the given direction if queried for
+      if (!data.orderByAttributes().isEmpty()) {
+         p = new SortPlan(tx, p, data.orderByAttributes(), data.orderByDirection());
+      }
+      
+      // Step 8.  Remove duplicates if queried for
+      if (data.isDistinct()) {
+         p = new DistinctPlan(tx, p, data.fields());
+      }
+      
+      // Display query plan
+      printQueryPlan(p.toString());
+      
       return p;
    }
    
@@ -89,6 +101,7 @@ public class HeuristicQueryPlanner implements QueryPlanner {
       }
       if (bestplan != null)
          tableplanners.remove(besttp);
+      
       return bestplan;
    }
    

@@ -98,24 +98,27 @@ public class SortPlan implements Plan {
       src.beforeFirst();
       if (!src.next())
          return temps;
+      
       TempTable currenttemp = new TempTable(tx, sch);
       temps.add(currenttemp);
       UpdateScan currentscan = currenttemp.open();
       while (copy(src, currentscan)) {
-    	  List<String> resultList = comp.compareSort(src, currentscan);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  if((direction.equals("asc") && (resultVal < 0)) ||
-        			  (direction.equals("desc") && (resultVal > 0))) {
-        		  currentscan.close();
-                  currenttemp = new TempTable(tx, sch);
-                  temps.add(currenttemp);
-                  currentscan = (UpdateScan) currenttemp.open();
-        	  } 
-          } 
+    	  List<String> resultList;
+    	  // if directions are present, sort plan is used for order by clause
+    		  resultList = comp.compareSort(src, currentscan);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  if((direction.equals("asc") && (resultVal < 0)) ||
+            			  (direction.equals("desc") && (resultVal > 0)) ||
+            			  (direction.equals("random") && (resultVal < 0))) {
+            		  currentscan.close();
+                      currenttemp = new TempTable(tx, sch);
+                      temps.add(currenttemp);
+                      currentscan = (UpdateScan) currenttemp.open();
+            	  }
+              } 
       }
-
       currentscan.close();
       return temps;
    }
@@ -127,8 +130,10 @@ public class SortPlan implements Plan {
          TempTable p2 = runs.remove(0);
          result.add(mergeTwoRuns(p1, p2));
       }
-      if (runs.size() == 1)
-         result.add(runs.get(0));
+      if (runs.size() == 1) {
+          result.add(runs.get(0));
+      }
+      
       return result;
    }
    
@@ -141,22 +146,22 @@ public class SortPlan implements Plan {
       boolean hasmore1 = src1.next();
       boolean hasmore2 = src2.next();
       while (hasmore1 && hasmore2) {
-    	  List<String> resultList = comp.compareSort(src1, src2);
-          if (!resultList.isEmpty()) {
-        	  String direction = resultList.get(0);
-        	  int resultVal = Integer.parseInt(resultList.get(1));
-        	  
-        	  if(direction.equals("asc") && (resultVal < 0)) {
-        		  hasmore1 = copy(src1, dest);
-        	  } else if (direction.equals("desc") && (resultVal > 0)) {
-        		  hasmore1 = copy(src1, dest);
-        	  } else {
-        		  hasmore2 = copy(src2, dest);
-        	  }
-          } else {
-  		      hasmore2 = copy(src2, dest);
-          }
-
+        	  List<String> resultList = comp.compareSort(src1, src2);
+              if (!resultList.isEmpty()) {
+            	  String direction = resultList.get(0);
+            	  int resultVal = Integer.parseInt(resultList.get(1));
+            	  if(direction.equals("asc") && (resultVal < 0)) {
+            		  hasmore1 = copy(src1, dest);
+            	  } else if (direction.equals("desc") && (resultVal > 0)) {
+            		  hasmore1 = copy(src1, dest);
+            	  } else if (direction.equals("random") && (resultVal < 0)) {
+            		  hasmore1 = copy(src1, dest);
+            	  } else {
+            		  hasmore2 = copy(src2, dest);
+            	  }
+              } else {
+            	  hasmore2 = copy(src2, dest);
+              }
       }
 
       if (hasmore1)
@@ -176,5 +181,9 @@ public class SortPlan implements Plan {
       for (String fldname : sch.fields())
          dest.setVal(fldname, src.getVal(fldname));
       return src.next();
+   }
+   
+   public String toString() {
+	   return "sort (" + p.toString() + ")";
    }
 }

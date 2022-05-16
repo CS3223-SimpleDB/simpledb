@@ -9,7 +9,8 @@ import simpledb.query.Scan;
  */
 public class NestedLoopsJoinScan implements Scan {
    private Scan lhs, rhs;
-   private String commonfield;
+   private String lhsfield, rhsfield, oprType;
+   private boolean isContinue = false;
 
    /**
     * Create a nested loop join scan having the two underlying scans.
@@ -17,10 +18,12 @@ public class NestedLoopsJoinScan implements Scan {
     * @param s2 the RHS scan
     * @param commonfield the common joining field between both scans
     */
-   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String commonfield) {
+   public NestedLoopsJoinScan(Scan lhs, Scan rhs, String lhsfield, String rhsfield, String oprType) {
       this.lhs = lhs;
       this.rhs = rhs;
-      this.commonfield = commonfield;
+      this.lhsfield = lhsfield;
+      this.rhsfield = rhsfield;
+      this.oprType = oprType;
       beforeFirst();
    }
 
@@ -43,15 +46,46 @@ public class NestedLoopsJoinScan implements Scan {
     * @return a boolean indicating the success of a match
     */
    public boolean next() {
+	  if (isContinue) {
+		  while(rhs.next()) {
+			    boolean isMatch = processRecords();
+	            if (isMatch) {
+	                return true;
+	            }
+		  }
+		  isContinue = false;
+		  rhs.beforeFirst();
+	  }
+	  
       while (lhs.next()) {
          while (rhs.next()) {
-            if (lhs.getVal(commonfield).equals(rhs.getVal(commonfield))) {
+        	 boolean isMatch = processRecords();
+            if (isMatch) {
+               isContinue = true;
                return true;
             }
          }
          rhs.beforeFirst();
       }
       return false;
+   }
+   
+   private boolean processRecords() {
+	   Constant lhsVal = lhs.getVal(lhsfield);
+	   Constant rhsVal = rhs.getVal(rhsfield);
+	   if (oprType.equals("<")) {
+	       return lhsVal.compareTo(rhsVal) < 0;
+	   } else if (oprType.equals("<=")) {
+	       return lhsVal.compareTo(rhsVal) <= 0; 
+	   } else if (oprType.equals(">")) {
+	       return lhsVal.compareTo(rhsVal) > 0;
+	   } else if (oprType.equals(">=")) {
+	       return lhsVal.compareTo(rhsVal) >= 0;
+	   } else if (oprType.equals("!=") || oprType.equals("<>")) {
+	       return !(lhsVal.equals(rhsVal));
+	   } else {
+	       return lhsVal.equals(rhsVal);
+	   }
    }
 
    /** 

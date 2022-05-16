@@ -19,6 +19,7 @@ public class RecordComparator implements Comparator<Scan> {
     */
    public RecordComparator(List<String> fields) {
        this.fields = fields;
+       this.directions = new LinkedList<String>();
    }
    
    public RecordComparator(List<String> fields, List<String> directions) {
@@ -57,12 +58,20 @@ public class RecordComparator implements Comparator<Scan> {
          int result = val1.compareTo(val2);
          if (result != 0) {
         	 int fldnameIndex = fields.indexOf(fldname);
-        	 String direction = directions.get(fldnameIndex);
-        	 resultList.add(direction);
+        	 if (directions.size() != 0) {
+            	 String direction = directions.get(fldnameIndex);
+            	 resultList.add(direction);
+        	 } else {
+        		 resultList.add("random");
+        	 }
         	 resultList.add(String.valueOf(result));
         	 return resultList;
          }
       }
       return resultList;
+   }
+   
+   public boolean isDirectionsPresent() {
+	   return (directions.size() != 0);
    }
 }

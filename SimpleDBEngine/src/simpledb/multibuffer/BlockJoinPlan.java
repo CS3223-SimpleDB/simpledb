@@ -12,7 +12,7 @@ import simpledb.plan.Plan;
 public class BlockJoinPlan implements Plan {
    private Transaction tx;
    private Plan lhs, rhs;
-   private String commonfield;
+   private String lhsfield, rhsfield, oprType;
    private Schema schema = new Schema();
 
    /**
@@ -22,11 +22,13 @@ public class BlockJoinPlan implements Plan {
     * @param rhs the plan for the RHS query
     * @param commonfield the common joining field between both plans
     */
-   public BlockJoinPlan(Transaction tx, Plan lhs, Plan rhs, String commonfield) {
+   public BlockJoinPlan(Transaction tx, Plan lhs, Plan rhs, String lhsfield, String rhsfield, String oprType) {
       this.tx = tx;
       this.lhs = new MaterializePlan(tx, lhs);
       this.rhs = rhs;
-      this.commonfield = commonfield;
+      this.lhsfield = lhsfield;
+      this.rhsfield = rhsfield;
+      this.oprType = oprType;
       schema.addAll(lhs.schema());
       schema.addAll(rhs.schema());
    }
@@ -45,7 +47,8 @@ public class BlockJoinPlan implements Plan {
    public Scan open() {
       Scan leftScan = lhs.open();
       TempTable tempRightTable = copyRecordsFrom(rhs);
-      return new BlockJoinScan(tx, leftScan, tempRightTable.tableName(), tempRightTable.getLayout(), commonfield);
+      return new BlockJoinScan(tx, leftScan, tempRightTable.tableName(),
+    		  tempRightTable.getLayout(), lhsfield, rhsfield, oprType);
    }
 
    /**
@@ -114,5 +117,9 @@ public class BlockJoinPlan implements Plan {
       src.close();
       dest.close();
       return t;
+   }
+   
+   public String toString() {
+	   return "[" + lhs.toString() + " nested loop join " + rhs.toString() + "]";
    }
 }

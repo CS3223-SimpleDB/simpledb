@@ -3,6 +3,7 @@ package simpledb.parse;
 import java.util.*;
 
 import simpledb.query.*;
+import simpledb.materialize.*;
 
 /**
  * Data for the SQL <i>select</i> statement.
@@ -12,18 +13,25 @@ public class QueryData {
    private List<String> fields;
    private Collection<String> tables;
    private Predicate pred;
+   private List<AggregationFn> aggregates;
    private List<String> orderByAttributes;
    private List<String> orderByDirection;
+   private List<String> groupByAttributes;
+   private boolean isDistinct;
    
    /**
-    * Saves the field, table list, predicate, order by attributes, and order by direction for each order by attribute.
+    * Saves the field, table list, predicate, order by attributes, order by direction for each order by attribute, and distinct state.
     */
-   public QueryData(List<String> fields, Collection<String> tables, Predicate pred, List<String> orderByAttributes, List<String> orderByDirection) {
+   public QueryData(List<String> fields, Collection<String> tables, Predicate pred, List<AggregationFn> aggregates,
+         List<String> orderByAttributes, List<String> orderByDirection, List<String> groupByAttributes, boolean isDistinct) {
       this.fields = fields;
       this.tables = tables;
       this.pred = pred;
+      this.aggregates = aggregates;
       this.orderByAttributes = orderByAttributes;
       this.orderByDirection = orderByDirection;
+      this.groupByAttributes = groupByAttributes;
+      this.isDistinct = isDistinct;
    }
    
    /**
@@ -52,6 +60,14 @@ public class QueryData {
    }
    
    /**
+    * Returns the aggregates mentioned in the select clause.
+    * @return a list of aggregate names
+    */
+   public List<AggregationFn> aggregates() {
+      return aggregates;
+   }
+   
+   /**
     * Returns the attributes mentioned in the order by clause.
     * @return a list of order by attributes
     */
@@ -66,6 +82,22 @@ public class QueryData {
     */
    public List<String> orderByDirection() {
       return orderByDirection;
+   }
+   
+   /**
+    * Returns the attributes mentioned in the group by clause.
+    * @return a list of group by attributes
+    */
+   public List<String> groupByAttributes() {
+      return groupByAttributes;
+   }
+   
+   /**
+    * Returns whether the query is distinct or not.
+    * @return the distinct state of the query
+    */
+   public boolean isDistinct() {
+      return isDistinct;
    }
    
    public String toString() {
